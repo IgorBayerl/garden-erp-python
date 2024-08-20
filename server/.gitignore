@@ -176,8 +176,13 @@ junitxml.xml
 .testmondata
 pytestdebug.log
 
-# Flask-SQLAlchemy plugin/instance
-migrations/
+# Ignore Python virtual environment
+venv/
+
+# Ignore compiled Python files
+__pycache__/
+*.pyc
+
 
 # Local SQLite databases
 *.sqlite3
