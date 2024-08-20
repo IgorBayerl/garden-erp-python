@@ -4,10 +4,10 @@ from app import db
 from app.models import Piece, ProductPiece, Product
 from app.schemas import PieceSchema
 
-pieces_bp = Blueprint('pieces', __name__, url_prefix='/pieces')
+pieces_bp = Blueprint('pieces', __name__)
 
 # PIECES
-@pieces_bp.route('/', methods=['POST'])
+@pieces_bp.route('/pieces', methods=['POST'])
 def add_piece():
     """
     Add a new piece to the database.
@@ -16,7 +16,7 @@ def add_piece():
     The schema validation ensures that all required fields are present and correctly formatted.
 
     Returns:
-        JSON response with a success message if the piece is added successfully,
+        JSON response with a success message and the ID of the piece if it is added successfully,
         or a JSON response with validation error messages and a 400 status code if validation fails.
     """
     schema = PieceSchema()
@@ -27,11 +27,13 @@ def add_piece():
     
     piece = Piece(**data)
     db.session.add(piece)
-    db.session.commit()
-    return jsonify({'message': 'Piece added successfully'})
+    db.session.commit()  # This will assign the ID to the piece
+
+    return jsonify({'message': 'Piece added successfully', 'id': piece.id})
 
 
-@pieces_bp.route('/', methods=['GET'])
+
+@pieces_bp.route('/pieces', methods=['GET'])
 def get_pieces():
     """
     Get a list of all pieces in the database.
@@ -44,7 +46,7 @@ def get_pieces():
     result = piece_schema.dump(pieces)
     return jsonify(result)
 
-@pieces_bp.route('/<int:id>', methods=['GET'])
+@pieces_bp.route('/pieces/<int:id>', methods=['GET'])
 def get_piece_by_id(id):
     """
     Get a specific piece by its ID.
@@ -62,7 +64,7 @@ def get_piece_by_id(id):
     return jsonify(result)
 
 
-@pieces_bp.route('/<int:id>', methods=['PUT'])
+@pieces_bp.route('/pieces/<int:id>', methods=['PUT'])
 def update_piece(id):
     """
     Update an existing piece in the database.
@@ -91,7 +93,7 @@ def update_piece(id):
     return jsonify({'message': 'Piece updated successfully'})
 
 
-@pieces_bp.route('/<int:id>', methods=['DELETE'])
+@pieces_bp.route('/pieces/<int:id>', methods=['DELETE'])
 def delete_piece(id):
     """
     Attempt to delete a piece from the database by its ID.

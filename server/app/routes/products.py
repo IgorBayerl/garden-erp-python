@@ -5,10 +5,10 @@ from app.models import Piece, Product, ProductPiece
 from app.schemas import PieceSchema, ProductSchema, ProductPieceSchema
 from datetime import datetime
 
-products_bp = Blueprint('products', __name__, url_prefix='/products')
+products_bp = Blueprint('products', __name__)
 
 # PRODUCTS
-@products_bp.route('/', methods=['POST'])
+@products_bp.route('/products', methods=['POST'])
 def add_product_with_pieces():
     """
     Add a new product along with its associated pieces to the database.
@@ -59,7 +59,7 @@ def add_product_with_pieces():
         db.session.rollback()  # Rollback the transaction if anything goes wrong
         return jsonify({'message': 'Failed to add product and pieces', 'error': str(e)}), 500
 
-@products_bp.route('/', methods=['GET'])
+@products_bp.route('/products', methods=['GET'])
 def get_products():
     """
     Get a list of all products in the database, including their associated pieces.
@@ -72,7 +72,7 @@ def get_products():
     result = product_schema.dump(products)
     return jsonify(result)
 
-@products_bp.route('/<int:id>', methods=['GET'])
+@products_bp.route('/products/<int:id>', methods=['GET'])
 def get_product(id):
     """
     Get a specific product by its ID, including its associated pieces.
@@ -90,7 +90,7 @@ def get_product(id):
     return jsonify(result)
 
 
-@products_bp.route('/<int:id>', methods=['PUT'])
+@products_bp.route('/products/<int:id>', methods=['PUT'])
 def update_product(id):
     """
     Update an existing product in the database along with its related pieces.
@@ -134,7 +134,7 @@ def update_product(id):
     return jsonify({'message': 'Product and related pieces updated successfully'})
 
 
-@products_bp.route('/<int:id>', methods=['DELETE'])
+@products_bp.route('/products/<int:id>', methods=['DELETE'])
 def delete_product(id):
     """
     Delete a product and its related ProductPiece entries from the database by its ID.

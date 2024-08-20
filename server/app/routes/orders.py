@@ -1,11 +1,11 @@
 from flask import Blueprint, request, jsonify
 from app.models import Product
 
-orders_bp = Blueprint('orders', __name__, url_prefix='/orders')
+orders_bp = Blueprint('orders', __name__)
 
 
 # ORDER
-@orders_bp.route('/calculate_order', methods=['POST'])
+@orders_bp.route('/orders/calculate_order', methods=['POST'])
 def calculate_order():
     """
     Calculate the required pieces based on the provided product quantities and group by specified criteria.
