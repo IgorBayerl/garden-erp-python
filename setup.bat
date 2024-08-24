@@ -22,7 +22,6 @@ flask db upgrade
 
 echo Adding sample data...
 :: Run the addData.py script
-python addData.py
 
 :: Return to the root directory
 cd ..
