@@ -14,7 +14,10 @@ def add_product_with_pieces(request):
 
 @api_view(['GET'])
 def get_products(request):
-    products = Product.objects.all()
+    # Prefetch related ProductPiece and Piece objects
+    products = Product.objects.all().prefetch_related('product_pieces__piece')
+    
+    # Serialize the products with the pre-fetched data
     serializer = ProductSerializer(products, many=True)
     return Response(serializer.data)
 
