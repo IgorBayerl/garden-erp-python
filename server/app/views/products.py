@@ -14,7 +14,7 @@ def add_product_with_pieces(request):
 
 @api_view(['GET'])
 def get_products(request):
-    # Prefetch related ProductPiece and Piece objects
+    # Prefetch related ProductPiece and Piece objects to optimize queries
     products = Product.objects.all().prefetch_related('product_pieces__piece')
     
     # Serialize the products with the pre-fetched data
@@ -24,7 +24,8 @@ def get_products(request):
 @api_view(['GET'])
 def get_product(request, id):
     try:
-        product = Product.objects.get(id=id)
+        # Prefetch related ProductPiece and Piece objects to optimize queries
+        product = Product.objects.prefetch_related('product_pieces__piece').get(id=id)
     except Product.DoesNotExist:
         return Response({'message': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
     
@@ -34,7 +35,8 @@ def get_product(request, id):
 @api_view(['PUT'])
 def update_product(request, id):
     try:
-        product = Product.objects.get(id=id)
+        # Prefetch related ProductPiece and Piece objects to optimize queries
+        product = Product.objects.prefetch_related('product_pieces__piece').get(id=id)
     except Product.DoesNotExist:
         return Response({'message': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
 

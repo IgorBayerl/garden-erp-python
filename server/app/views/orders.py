@@ -21,7 +21,8 @@ def calculate_order_by_size(request):
             return Response({'message': 'Invalid product data'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            product = Product.objects.get(id=product_id)
+            # Prefetch related ProductPiece and Piece objects to optimize queries
+            product = Product.objects.prefetch_related('product_pieces__piece').get(id=product_id)
         except Product.DoesNotExist:
             return Response({'message': f'Product with id {product_id} not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -74,7 +75,8 @@ def calculate_order_by_product(request):
             return Response({'message': 'Invalid product data'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            product = Product.objects.get(id=product_id)
+            # Prefetch related ProductPiece and Piece objects to optimize queries
+            product = Product.objects.prefetch_related('product_pieces__piece').get(id=product_id)
         except Product.DoesNotExist:
             return Response({'message': f'Product with id {product_id} not found'}, status=status.HTTP_404_NOT_FOUND)
 
