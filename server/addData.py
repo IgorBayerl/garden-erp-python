@@ -1,9 +1,9 @@
 import requests
 
-BASE_URL = 'http://127.0.0.1:5000'
+BASE_URL = 'http://127.0.0.1:8000'
 
 def add_piece(name, sizeX, sizeY, sizeZ):
-    response = requests.post(f'{BASE_URL}/pieces', json={
+    response = requests.post(f'{BASE_URL}/pieces/', json={
         'name': name,
         'sizeX': sizeX,
         'sizeY': sizeY,
@@ -14,18 +14,16 @@ def add_piece(name, sizeX, sizeY, sizeZ):
     return result.get('id')  # Return the ID of the newly created piece
 
 def add_product_with_pieces(name, pieces):
-    response = requests.post(f'{BASE_URL}/products', json={
-        'product': {
-            'name': name
-        },
-        'pieces': pieces
+    response = requests.post(f'{BASE_URL}/products/', json={
+        'name': name,
+        'product_pieces': pieces
     })
     result = response.json()
     print(result)
     return result.get('product_id')
 
 def add_production_order(products):
-    response = requests.post(f'{BASE_URL}/orders/calculate', json={
+    response = requests.post(f'{BASE_URL}/orders/calculate/', json={
         'products': products
     })
     print(response.json())

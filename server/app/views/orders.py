@@ -1,42 +1,31 @@
-from flask import Blueprint, request, jsonify
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from app.models import Product
 
-orders_bp = Blueprint('orders', __name__)
-
-@orders_bp.route('/orders/calculate_order_by_size', methods=['POST'])
-def calculate_order_by_size():
-    """
-    Calculate the required pieces based on the provided product quantities and group by size.
-
-    The request body should include:
-    - `order`: The order in which to sort the results. Can be "asc" or "desc". Defaults to "asc".
-    - `sort_by`: A list specifying the order of dimensions to sort by, e.g., ["x", "y", "z"].
-    - `products`: A list of products with `product_id` and `quantity`.
-
-    Returns:
-        JSON response with the calculated pieces grouped by size and sorted according to the specified criteria,
-        or a JSON response with an error message and a 400 status code if the request is invalid.
-    """
-    data = request.json
+@api_view(['POST'])
+def calculate_order_by_size(request):
+    data = request.data
     order = data.get('order', 'asc')  # Default to 'asc' if not provided
     sort_by = data.get('sort_by', ['x', 'y', 'z'])  # Default sort by ['x', 'y', 'z'] if not provided
 
     if 'products' not in data:
-        return jsonify({'message': 'Invalid request, products field is required'}), 400
-    
+        return Response({'message': 'Invalid request, products field is required'}, status=status.HTTP_400_BAD_REQUEST)
+
     pieces_by_size = {}
 
     for item in data['products']:
         product_id = item.get('product_id')
         quantity = item.get('quantity')
         if not product_id or not quantity:
-            return jsonify({'message': 'Invalid product data'}), 400
+            return Response({'message': 'Invalid product data'}, status=status.HTTP_400_BAD_REQUEST)
         
-        product = Product.query.get(product_id)
-        if not product:
-            return jsonify({'message': f'Product with id {product_id} not found'}), 404
-        
-        for product_piece in product.product_pieces:
+        try:
+            product = Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            return Response({'message': f'Product with id {product_id} not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        for product_piece in product.product_pieces.all():
             piece = product_piece.piece
             size_key = f"{piece.sizeX}x{piece.sizeY}x{piece.sizeZ}"
 
@@ -61,48 +50,35 @@ def calculate_order_by_size():
     # Determine sort order
     reverse = True if order == 'desc' else False
 
-    # Function to dynamically sort based on specified dimensions
     def sort_function(item):
         return tuple(item[key] for key in sort_by)
 
-    # Sort and return response based on size and order
     response = sorted(pieces_by_size.values(), key=sort_function, reverse=reverse)
 
-    return jsonify(response)
+    return Response(response)
 
-
-@orders_bp.route('/orders/calculate_order_by_product', methods=['POST'])
-def calculate_order_by_product():
-    """
-    Calculate the required pieces based on the provided product quantities and group by product.
-
-    The request body should include:
-    - `order`: The order in which to sort the results. Can be "asc" or "desc". Defaults to "asc".
-    - `products`: A list of products with `product_id` and `quantity`.
-
-    Returns:
-        JSON response with the calculated pieces grouped by product and sorted by product name
-        in the specified order (asc or desc), or a JSON response with an error message and a 400 status code if the request is invalid.
-    """
-    data = request.json
+@api_view(['POST'])
+def calculate_order_by_product(request):
+    data = request.data
     order = data.get('order', 'asc')  # Default to 'asc' if not provided
 
     if 'products' not in data:
-        return jsonify({'message': 'Invalid request, products field is required'}), 400
-    
+        return Response({'message': 'Invalid request, products field is required'}, status=status.HTTP_400_BAD_REQUEST)
+
     pieces_by_product = {}
 
     for item in data['products']:
         product_id = item.get('product_id')
         quantity = item.get('quantity')
         if not product_id or not quantity:
-            return jsonify({'message': 'Invalid product data'}), 400
+            return Response({'message': 'Invalid product data'}, status=status.HTTP_400_BAD_REQUEST)
         
-        product = Product.query.get(product_id)
-        if not product:
-            return jsonify({'message': f'Product with id {product_id} not found'}), 404
-        
-        for product_piece in product.product_pieces:
+        try:
+            product = Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            return Response({'message': f'Product with id {product_id} not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        for product_piece in product.product_pieces.all():
             piece = product_piece.piece
             product_key = product.name
 
@@ -124,10 +100,8 @@ def calculate_order_by_product():
                 'total_quantity': total_quantity
             })
 
-    # Determine sort order
     reverse = True if order == 'desc' else False
 
-    # Sort products by their names and return the response
     response = sorted(pieces_by_product.values(), key=lambda x: x['product'], reverse=reverse)
 
-    return jsonify(response)
+    return Response(response)

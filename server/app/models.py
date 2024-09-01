@@ -1,25 +1,21 @@
-from . import db
+from django.db import models
 
-class Piece(db.Model):
-    __tablename__ = 'pieces'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    sizeX = db.Column(db.Integer, nullable=False)
-    sizeY = db.Column(db.Integer, nullable=False)
-    sizeZ = db.Column(db.Integer, nullable=False)
-    product_pieces = db.relationship("ProductPiece", back_populates="piece")
+class Piece(models.Model):
+    name = models.CharField(max_length=50, null=False)
+    sizeX = models.IntegerField(null=False)
+    sizeY = models.IntegerField(null=False)
+    sizeZ = models.IntegerField(null=False)
 
-class Product(db.Model):
-    __tablename__ = 'products'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    product_pieces = db.relationship("ProductPiece", back_populates="product")
+    def __str__(self):
+        return self.name
 
-class ProductPiece(db.Model):
-    __tablename__ = 'product_pieces'
-    id = db.Column(db.Integer, primary_key=True)
-    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
-    piece_id = db.Column(db.Integer, db.ForeignKey('pieces.id'), nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
-    product = db.relationship("Product", back_populates="product_pieces")
-    piece = db.relationship("Piece", back_populates="product_pieces")
+class Product(models.Model):
+    name = models.CharField(max_length=50, null=False)
+
+    def __str__(self):
+        return self.name
+
+class ProductPiece(models.Model):
+    product = models.ForeignKey(Product, related_name="product_pieces", on_delete=models.CASCADE)
+    piece = models.ForeignKey(Piece, related_name="product_pieces", on_delete=models.CASCADE)
+    quantity = models.IntegerField(null=False)
