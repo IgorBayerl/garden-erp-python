@@ -1,3 +1,4 @@
 server/staticfiles/*
 server/build/*
 server/dist/*
+*.sqlite3
