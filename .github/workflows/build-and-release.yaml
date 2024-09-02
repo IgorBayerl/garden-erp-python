@@ -45,16 +45,20 @@ jobs:
         name: GardenErp-executable
         path: server/dist/GardenErp.exe
 
+    - name: Set Short SHA
+      run: echo "SHORT_SHA=${GITHUB_SHA::8}" >> $GITHUB_ENV
+    
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.sha }}  # Use commit SHA for a unique tag name
-        release_name: Release ${{ github.sha }}
+        tag_name: ${{ github.ref_name }}-${{ env.SHORT_SHA }}  # Unique tag name
+        release_name: Release ${{ github.ref_name }}-${{ env.SHORT_SHA }}
         draft: false
         prerelease: false
+      
 
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1
