@@ -18,21 +18,26 @@ jobs:
       with:
         python-version: '3.12'  # Use the same version of Python as your project
 
+    - name: Change to the project directory
+      run: cd server
+
     - name: Install dependencies
       run: |
+        cd server
         python -m pip install --upgrade pip
         pip install pyinstaller
-        pip install -r requirements.txt
+        pip install -r server/requirements.txt
 
     - name: Build executable with PyInstaller
       run: |
+        cd server
         pyinstaller GardenErp.spec
 
     - name: Archive build artifacts
       uses: actions/upload-artifact@v3
       with:
         name: GardenErp-executable
-        path: dist/GardenErp.exe
+        path: server/dist/GardenErp.exe
 
     - name: Create Release
       id: create_release
@@ -51,6 +56,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: dist/GardenErp.exe
+        asset_path: server/dist/GardenErp.exe
         asset_name: GardenErp.exe
         asset_content_type: application/octet-stream
