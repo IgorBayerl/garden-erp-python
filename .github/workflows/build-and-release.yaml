@@ -39,15 +39,18 @@ jobs:
         cd server
         pyinstaller GardenErp.spec
 
+    - name: Set Build Name with Date and Time
+      run: echo "BUILD_NAME=$(date +'%Y%m%d%H%M%S')-${GITHUB_SHA::8}" >> $GITHUB_ENV
+  
+    - name: Debug Build Name
+      run: echo "Build Name - ${{ env.BUILD_NAME }}
+
     - name: Archive build artifacts
       uses: actions/upload-artifact@v3
       with:
         name: GardenErp-executable
-        path: server/dist/GardenErp.exe
+        path: server/dist/GardenErp.exe  # .exe file for Windows
 
-    - name: Set Short SHA
-      run: echo "SHORT_SHA=${GITHUB_SHA::8}" >> $GITHUB_ENV
-    
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -58,7 +61,6 @@ jobs:
         release_name: Release ${{ github.ref_name }}-${{ env.SHORT_SHA }}
         draft: false
         prerelease: false
-      
 
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1
