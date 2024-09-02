@@ -28,6 +28,11 @@ jobs:
         pip install pyinstaller
         pip install -r requirements.txt
 
+    - name: Collect static files
+      run: |
+        cd server
+        python manage.py collectstatic --noinput
+
     - name: Build executable with PyInstaller
       run: |
         cd server
