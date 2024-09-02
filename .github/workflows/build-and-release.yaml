@@ -42,8 +42,7 @@ jobs:
     - name: Set Build Name with Date and Time
       run: |
         $shortSha = $env:GITHUB_SHA.Substring(0, 8)
-        $date = Get-Date -Format "yyyyMMddHHmmss"
-        echo "BUILD_NAME=$date-$shortSha" >> $env:GITHUB_ENV
+        echo "BUILD_NAME=$shortSha" >> $env:GITHUB_ENV
 
     - name: Archive build artifacts
       uses: actions/upload-artifact@v3
