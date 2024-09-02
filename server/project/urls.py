@@ -16,26 +16,20 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from app.views.pieces import add_piece, get_pieces, get_piece_by_id, update_piece, delete_piece
-from app.views.products import add_product_with_pieces, get_products, get_product, update_product, delete_product
+from app.views.pieces import PieceView
+from app.views.products import ProductView
 from app.views.orders import calculate_order_by_size, calculate_order_by_product
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     
     # Pieces
-    path('pieces/add/', add_piece, name='add_piece'),
-    path('pieces/<int:id>/', get_piece_by_id, name='get_piece_by_id'),
-    path('pieces/', get_pieces, name='get_pieces'),
-    path('pieces/<int:id>/update/', update_piece, name='update_piece'),
-    path('pieces/<int:id>/delete/', delete_piece, name='delete_piece'),
+    path('pieces/', PieceView.as_view(), name='pieces_list_create'),  # For GET (list) and POST (create)
+    path('pieces/<int:id>/', PieceView.as_view(), name='pieces_detail_update_delete'),
 
     # Products
-    path('products/add/', add_product_with_pieces, name='add_product_with_pieces'),
-    path('products/<int:id>/', get_product, name='get_product'),
-    path('products/', get_products, name='get_products'),
-    path('products/<int:id>/update/', update_product, name='update_product'),
-    path('products/<int:id>/delete/', delete_product, name='delete_product'),
+    path('products/', ProductView.as_view(), name='products_list_create'),  # For GET (list) and POST (create)
+    path('products/<int:id>/', ProductView.as_view(), name='products_detail_update_delete'),  # For GET (retrieve), PUT (update), and DELETE (delete)
 
     # Orders
     path('orders/calculate_order_by_size/', calculate_order_by_size, name='calculate_order_by_size'),
