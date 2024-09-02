@@ -2,3 +2,4 @@ server/staticfiles/*
 server/build/*
 server/dist/*
 *.sqlite3
+.vscode

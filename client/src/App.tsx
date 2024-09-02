@@ -1,7 +1,25 @@
+import { Route, Routes } from "react-router-dom";
+import Layout from "@/components/layout/Layout";
+import OrdersPage from "@/components/pages/Orders";
+import PiecesPage from "@/components/pages/Pieces";
+import ProductsPage from "@/components/pages/Products";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+
+const queryClient = new QueryClient()
+
 export default function App() {
   return (
-    <h1 className="text-3xl font-bold underline">
-      Hello world!
-    </h1>
+    <QueryClientProvider client={queryClient}>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<OrdersPage />} />
+          <Route path="/orders" element={<OrdersPage />} />
+          <Route path="/pieces" element={<PiecesPage />} />
+          <Route path="/products" element={<ProductsPage />} />
+        </Routes>
+      </Layout>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   )
 }
