@@ -42,7 +42,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: GardenErp-executable
-        path: server/dist/GardenErp.exe
+        path: server/dist/GardenErp
 
     - name: Create Release
       id: create_release
