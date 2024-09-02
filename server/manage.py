@@ -2,11 +2,11 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
-from django.core.management import call_command
+from django.conf import settings
+from django.core.management import execute_from_command_line, call_command
 from django.db import connections, OperationalError
 from django.db.migrations.executor import MigrationExecutor
 from django.core.exceptions import ImproperlyConfigured
-from django.conf import settings  # Import the settings module
 
 def run_migrations():
     """Run database migrations if needed."""
@@ -50,6 +50,10 @@ def main():
             "forget to activate a virtual environment?"
         ) from exc
     
+    # Log the path to the database
+    db_path = settings.DATABASES['default']['NAME']
+    print(f"Using database located at: {db_path}")
+
     # Run migrations before starting the server
     run_migrations()
 
