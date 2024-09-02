@@ -40,15 +40,15 @@ jobs:
         pyinstaller GardenErp.spec
 
     - name: Set Build Name with Date and Time
-      run: echo "BUILD_NAME=$(date +'%Y%m%d%H%M%S')-${GITHUB_SHA::8}" >> $GITHUB_ENV
-  
-    - name: Debug Build Name
-      run: echo "Build Name - ${{ env.BUILD_NAME }}"
+      run: |
+        $shortSha = $env:GITHUB_SHA.Substring(0, 8)
+        $date = Get-Date -Format "yyyyMMddHHmmss"
+        echo "BUILD_NAME=$date-$shortSha" >> $env:GITHUB_ENV
 
     - name: Archive build artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: GardenErp-executable
+        name: GardenErp-executable-${{ env.BUILD_NAME }}
         path: server/dist/GardenErp.exe  # .exe file for Windows
 
     - name: Create Release
@@ -57,8 +57,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref_name }}-${{ env.SHORT_SHA }}  # Unique tag name
-        release_name: Release ${{ github.ref_name }}-${{ env.SHORT_SHA }}
+        tag_name: ${{ env.BUILD_NAME }}  # Unique tag name with date and time
+        release_name: Release ${{ env.BUILD_NAME }}
         draft: false
         prerelease: false
 
@@ -69,5 +69,5 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: server/dist/GardenErp.exe
-        asset_name: GardenErp.exe
+        asset_name: GardenErp-${{ env.BUILD_NAME }}.exe
         asset_content_type: application/octet-stream
