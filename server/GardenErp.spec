@@ -11,7 +11,7 @@ a = Analysis(
     binaries=[],
     # Include static files and any other necessary data files
     datas=[(os.path.join(project_root, 'staticfiles'), 'static')],
-    hiddenimports=[],
+    hiddenimports=['corsheaders', 'corsheaders.middleware'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
