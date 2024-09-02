@@ -23,3 +23,11 @@ python manage.py runserver
 ```bash
 python addData.py
 ```
+
+
+----
+
+## Build the executable
+```
+pyinstaller GardenErp.spec
+```
