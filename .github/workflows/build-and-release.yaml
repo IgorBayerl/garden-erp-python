@@ -43,7 +43,7 @@ jobs:
       run: echo "BUILD_NAME=$(date +'%Y%m%d%H%M%S')-${GITHUB_SHA::8}" >> $GITHUB_ENV
   
     - name: Debug Build Name
-      run: echo "Build Name - ${{ env.BUILD_NAME }}
+      run: echo "Build Name - ${{ env.BUILD_NAME }}"
 
     - name: Archive build artifacts
       uses: actions/upload-artifact@v3
