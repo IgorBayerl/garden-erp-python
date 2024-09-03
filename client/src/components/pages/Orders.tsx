@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { ComboboxProduct } from "@/components/organisms/ComboBoxProduct";
+import { ComboboxProduct } from "@/components/organisms/TempComboboxProduct";
 import { Product } from "@/api/types";
 
 const products: Product[] = [
