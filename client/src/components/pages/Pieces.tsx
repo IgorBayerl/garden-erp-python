@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import ErrorState from "@/components/layout/ErrorState";
 import SkeletonLoader from "@/components/layout/SkeletonLoader";
 import PiecesList from "@/components/organisms/PiecesList";
+import { ScrollArea } from "../ui/scroll-area";
 
 export default function PiecesPage() {
   const { data: pieces, isLoading, isError } = useGetPieces();
 
   return (
-    <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+    <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 min-h-screen max-h-screen">
       <div className="flex items-center">
         <h1 className="text-lg font-semibold md:text-2xl">Pieces</h1>
       </div>
@@ -27,10 +28,11 @@ export default function PiecesPage() {
 
       {!isLoading && !isError && pieces && pieces.length > 0 && (
         <div
-        className="flex flex-1 flex-col rounded-lg border border-dashed shadow-sm"
-        x-chunk="dashboard-02-chunk-1"
+          className="flex flex-1 flex-col rounded-lg border border-dashed shadow-sm overflow-hidden"
         >
-          <PiecesList pieces={pieces} />
+          <ScrollArea className="h-full ">
+            <PiecesList pieces={pieces} />
+          </ScrollArea>
         </div>
       )}
 

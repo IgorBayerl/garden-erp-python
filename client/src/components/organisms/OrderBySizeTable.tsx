@@ -20,7 +20,8 @@ export default function OrderBySizeTable({ data }: OrderTableProps) {
             <th className="px-4 py-2 border border-gray-200 text-left">Esp.</th>
             <th className="px-4 py-2 border border-gray-200 text-left text-xs">Qtd. P/Produto</th>
             <th className="px-4 py-2 border border-gray-200 text-left text-xs">Qtd. Total</th>
-            <th className="px-4 py-2 border border-gray-200 text-left">Quant. Cortar</th>
+            <th className="px-4 py-2 border border-gray-200 text-left">Qtd. Cortar</th>
+            <th className="px-4 py-2 border border-gray-200 text-left">Qtd. Tabuas</th>
           </tr>
         </thead>
         <tbody>
@@ -42,7 +43,10 @@ export default function OrderBySizeTable({ data }: OrderTableProps) {
                     <td className="px-4 py-2 border border-gray-200 text-xs">{detail.quantity}</td>
                     <td className="px-4 py-2 border border-gray-200 text-xs">{detail.total_quantity}</td>
                     {detailIndex === 0 && (
-                      <td rowSpan={item.details.length} className="px-4 py-2 border border-gray-200 text-lg font-bold">{item.total_quantity}</td>
+                      <>
+                        <td rowSpan={item.details.length} className="px-4 py-2 border border-gray-200 text-lg font-bold">{item.total_quantity}</td>
+                        <td rowSpan={item.details.length} className="px-4 py-2 border border-gray-200 text-lg font-bold">{item.planks_needed}</td>
+                      </>
                     )}  
                   </React.Fragment>
                 </tr>

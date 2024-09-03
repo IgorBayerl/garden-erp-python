@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import ErrorState from "@/components/layout/ErrorState";
 import SkeletonLoader from "@/components/layout/SkeletonLoader";
 import ProductList from "@/components/organisms/ProductList";
+import { ScrollArea } from "../ui/scroll-area";
 
 export default function ProductsPage() {
   const { data: products, isLoading, isError } = useGetProducts();
 
   return (
-    <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+    <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 min-h-screen max-h-screen">
       <div className="flex items-center">
         <h1 className="text-lg font-semibold md:text-2xl">Products</h1>
       </div>
@@ -27,10 +28,11 @@ export default function ProductsPage() {
 
       {!isLoading && !isError && products && products.length > 0 && (
         <div
-          className="flex flex-1 flex-col rounded-lg border border-dashed shadow-sm"
-          x-chunk="dashboard-02-chunk-1"
+          className="flex flex-1 flex-col rounded-lg border border-dashed shadow-sm overflow-hidden"
         >
-          <ProductList products={products} />
+          <ScrollArea className="h-full">
+            <ProductList products={products} />
+          </ScrollArea>
         </div>
       )}
 
