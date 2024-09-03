@@ -127,7 +127,7 @@ export default function OrdersPage() {
             </div>
           </ResizablePanel>
           <ResizableHandle withHandle />
-          <ResizablePanel minSize={32} className="flex flex-col overflow-hidden">
+          <ResizablePanel minSize={60} className="flex flex-col overflow-hidden">
             <div className="m-4 h-full">
               <div className="flex items-center gap-4 justify-between">
                 <h2 className="text-lg font-semibold">Ordem de produção</h2>

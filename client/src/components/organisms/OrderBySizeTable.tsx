@@ -28,7 +28,7 @@ export default function OrderBySizeTable({ data }: OrderTableProps) {
           {data.map((item, index) => (
             <React.Fragment key={index}>
               {item.details.map((detail, detailIndex) => (
-                <tr key={index} className="bg-white">
+                <tr key={index} className={index % 2 === 0 ? "bg-white" : "bg-gray-100"}>
                   <React.Fragment key={detailIndex}>
                     <td className="px-4 py-2 border border-gray-200 text-xs">{detail.product}</td>
                     <td className="px-4 py-2 border border-gray-200 text-xs text-center">{detail.product_quantity}</td>
