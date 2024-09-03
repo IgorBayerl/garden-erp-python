@@ -1,14 +1,12 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import api from './api';
 import { Product } from './types';
-import { delay } from '@/lib/utils';
 
 // Fetch all products
 export const useGetProducts = () => {
   return useQuery({
     queryKey: ['products'],
     queryFn: async () => {
-      await delay(1500);
       const response = await api.get<Product[]>('/products/');
       return response.data;
     },

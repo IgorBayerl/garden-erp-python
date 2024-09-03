@@ -1,14 +1,12 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import api from './api';
 import { Piece } from './types';
-import { delay } from '@/lib/utils';
 
 // Fetch all pieces
 export const useGetPieces = () => {
   return useQuery({
     queryKey: ['pieces'],
     queryFn: async () => {
-      await delay(1500);
       const response = await api.get<Piece[]>('/pieces/');
       return response.data;
     },

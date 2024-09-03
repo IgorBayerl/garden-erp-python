@@ -2,6 +2,8 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+import threading
+import webbrowser
 from django.conf import settings
 from django.core.management import execute_from_command_line, call_command
 from django.db import connections, OperationalError
@@ -38,6 +40,10 @@ def run_migrations():
         print("Database is improperly configured. Please check your settings.")
         sys.exit(1)
 
+def open_browser():
+    """Open the browser to the Django server URL."""
+    webbrowser.open_new("http://localhost:8000")
+
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project.settings')
@@ -61,7 +67,13 @@ def main():
     if len(sys.argv) == 1:
         sys.argv.extend(['runserver', '--noreload'])
 
+    # Start a new thread to open the browser
+    if os.environ.get('RUN_MAIN') != 'true':
+        # Start a new thread to open the browser
+        threading.Thread(target=open_browser).start()
+
     execute_from_command_line(sys.argv)
+
 
 if __name__ == '__main__':
     main()
