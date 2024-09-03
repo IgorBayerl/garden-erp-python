@@ -12,15 +12,18 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Product } from "@/api/types";
 
+
+interface ComboboxProductProps {
+  list: Product[];
+  selectedProduct: Product | null;
+  setSelectedProduct: (product: Product | null) => void;
+}
+
 export function ComboboxProduct({
   list,
   selectedProduct,
   setSelectedProduct,
-}: {
-  list: Product[];
-  selectedProduct: Product | null;
-  setSelectedProduct: (product: Product | null) => void;
-}) {
+}: ComboboxProductProps) {
   const [open, setOpen] = useState(false);
 
   return (
