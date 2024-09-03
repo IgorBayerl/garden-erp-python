@@ -67,8 +67,8 @@ def main():
     if len(sys.argv) == 1:
         sys.argv.extend(['runserver', '--noreload'])
 
-    # Start a new thread to open the browser
-    if os.environ.get('RUN_MAIN') != 'true':
+    # Check if the command is 'runserver' and only then open the browser
+    if 'runserver' in sys.argv and os.environ.get('RUN_MAIN') != 'true':
         # Start a new thread to open the browser
         threading.Thread(target=open_browser).start()
 
