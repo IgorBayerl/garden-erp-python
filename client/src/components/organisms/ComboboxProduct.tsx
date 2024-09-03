@@ -25,7 +25,11 @@ export function ComboboxProduct({
   setSelectedProduct,
 }: ComboboxProductProps) {
   const [open, setOpen] = useState(false);
-
+  // return (
+  //   <>
+  //   {JSON.stringify(list,null,2)}
+  //   </>
+  // )
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>

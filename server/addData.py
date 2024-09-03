@@ -1,6 +1,6 @@
 import requests
 
-BASE_URL = 'http://127.0.0.1:8000'
+BASE_URL = 'http://127.0.0.1:8000/api'
 
 def add_piece(name, sizeX, sizeY, sizeZ):
     response = requests.post(f'{BASE_URL}/pieces/', json={
