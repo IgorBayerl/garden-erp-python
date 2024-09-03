@@ -9,6 +9,7 @@ export interface CalculateOrderRequest {
    * For example, if the sort_by array is ['x', 'y', 'z'], the returned data will be sorted by x, y, z.
    */
   sort_by: ['x' | 'y' | 'z', 'x' | 'y' | 'z', 'x' | 'y' | 'z'];
+  plank_size: number;
   products: {
     product_id: number;
     quantity: number;
@@ -28,6 +29,7 @@ export interface OrderResponseItem {
   y: number;
   z: number;
   total_quantity: number;
+  planks_needed: number;
   details: OrderDetail[];
 }
 

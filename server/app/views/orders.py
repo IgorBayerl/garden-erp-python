@@ -2,15 +2,21 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from app.models import Product
+import math
+
 
 @api_view(['POST'])
 def calculate_order_by_size(request):
     data = request.data
-    order = data.get('order', 'asc')  # Default to 'asc' if not provided
-    sort_by = data.get('sort_by', ['x', 'y', 'z'])  # Default sort by ['x', 'y', 'z'] if not provided
+    order = data.get('order', 'desc')  # Default to 'desc' if not provided
+    sort_by = data.get('sort_by', ['z', 'y', 'x'])  # Default sort by ['z', 'y', 'x'] if not provided
+    plank_size = data.get('plank_size', 3000)    # Default to 3000 if not provided
 
     if 'products' not in data:
         return Response({'message': 'Invalid request, products field is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if plank_size is None:
+        return Response({'message': 'Invalid request, plank_size is required'}, status=status.HTTP_400_BAD_REQUEST)
 
     pieces_by_size = {}
 
@@ -36,11 +42,16 @@ def calculate_order_by_size(request):
                     'y': piece.sizeY,
                     'z': piece.sizeZ,
                     'total_quantity': 0,
+                    'planks_needed': 0,
                     'details': []
                 }
 
             total_quantity = product_piece.quantity * quantity
             pieces_by_size[size_key]['total_quantity'] += total_quantity
+
+            # Calculate the number of planks needed using the provided formula
+            planks_needed_for_piece = math.ceil((piece.sizeX * pieces_by_size[size_key]['total_quantity']) / plank_size)
+            pieces_by_size[size_key]['planks_needed'] = planks_needed_for_piece
 
             # Check if the piece is already in the details list
             piece_exists = False
@@ -69,6 +80,8 @@ def calculate_order_by_size(request):
     response = sorted(pieces_by_size.values(), key=sort_function, reverse=reverse)
 
     return Response(response)
+
+
 
 
 @api_view(['POST'])

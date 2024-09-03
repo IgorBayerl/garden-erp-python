@@ -2,9 +2,9 @@ from django.db import models
 
 class Piece(models.Model):
     name = models.CharField(max_length=50, null=False)
-    sizeX = models.IntegerField(null=False)
-    sizeY = models.IntegerField(null=False)
-    sizeZ = models.IntegerField(null=False)
+    sizeX = models.IntegerField(null=False) # Comprimento
+    sizeY = models.IntegerField(null=False) # Largura
+    sizeZ = models.IntegerField(null=False) # Espessura
 
     def __str__(self):
         return self.name
