@@ -60,7 +60,9 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: GardenErp-executable-${{ env.BUILD_NAME }}
-        path: server/dist/GardenErp.exe  # .exe file for Windows
+        path: |
+          server/dist/GardenErp.exe  # .exe file for Windows
+          server/dist/static/**      # Include all static files
 
     - name: Create Release
       id: create_release
@@ -79,6 +81,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: server/dist/GardenErp.exe
-        asset_name: GardenErp-${{ env.BUILD_NAME }}.exe
-        asset_content_type: application/octet-stream
+        asset_path: |
+          server/dist/GardenErp.exe
+          server/dist/static/**      # Include all static files
+        asset_name: GardenErp-${{ env.BUILD_NAME }}.zip
+        asset_content_type: application/zip
