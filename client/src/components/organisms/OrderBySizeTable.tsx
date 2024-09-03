@@ -12,16 +12,16 @@ export default function OrderBySizeTable({ data }: OrderTableProps) {
       <table className="min-w-full border-collapse border border-gray-200">
         <thead className="bg-gray-100">
           <tr>
-            <th className="px-4 py-2 border border-gray-200 text-left text-xs">Produto</th>
-            <th className="px-4 py-2 border border-gray-200 text-left text-xs">Qtd. Produto</th>
-            <th className="px-4 py-2 border border-gray-200 text-left text-xs">Nome Peça</th>
-            <th className="px-4 py-2 border border-gray-200 text-left">Comp.</th>
-            <th className="px-4 py-2 border border-gray-200 text-left">Larg.</th>
-            <th className="px-4 py-2 border border-gray-200 text-left">Esp.</th>
-            <th className="px-4 py-2 border border-gray-200 text-left text-xs">Qtd. P/Produto</th>
-            <th className="px-4 py-2 border border-gray-200 text-left text-xs">Qtd. Total</th>
-            <th className="px-4 py-2 border border-gray-200 text-left">Qtd. Cortar</th>
-            <th className="px-4 py-2 border border-gray-200 text-left">Qtd. Tabuas</th>
+            <th className="px-4 py-2 border border-gray-200 text-left align-bottom">Produto</th>
+            <th className="px-4 py-2 border border-gray-200 text-left header-rotate">Qtd. Produto</th>
+            <th className="px-4 py-2 border border-gray-200 text-left align-bottom">Nome Peça</th>
+            <th className="px-4 py-2 border border-gray-200 text-left header-rotate">Comp.</th>
+            <th className="px-4 py-2 border border-gray-200 text-left header-rotate">Larg.</th>
+            <th className="px-4 py-2 border border-gray-200 text-left header-rotate">Esp.</th>
+            <th className="px-4 py-2 border border-gray-200 text-left header-rotate">Qtd. P/Produto</th>
+            <th className="px-4 py-2 border border-gray-200 text-left header-rotate">Qtd. Total</th>
+            <th className="px-4 py-2 border border-gray-200 text-left header-rotate">Qtd. Cortar</th>
+            <th className="px-4 py-2 border border-gray-200 text-left header-rotate">Qtd. Tabuas</th>
           </tr>
         </thead>
         <tbody>
@@ -31,21 +31,21 @@ export default function OrderBySizeTable({ data }: OrderTableProps) {
                 <tr key={index} className="bg-white">
                   <React.Fragment key={detailIndex}>
                     <td className="px-4 py-2 border border-gray-200 text-xs">{detail.product}</td>
-                    <td className="px-4 py-2 border border-gray-200 text-xs">{detail.product_quantity}</td>
+                    <td className="px-4 py-2 border border-gray-200 text-xs text-center">{detail.product_quantity}</td>
                     <td className="px-4 py-2 border border-gray-200 text-xs">{detail.piece}</td>
                     {detailIndex === 0 && (
                       <>
-                        <td rowSpan={item.details.length} className="px-4 py-2 border border-gray-200 text-lg font-bold">{item.x}</td>
-                        <td rowSpan={item.details.length} className="px-4 py-2 border border-gray-200 text-lg font-bold">{item.y}</td>
-                        <td rowSpan={item.details.length} className="px-4 py-2 border border-gray-200 text-lg font-bold">{item.z}</td>
+                        <td rowSpan={item.details.length} className="px-4 py-2 border border-gray-200 text-lg font-bold text-center">{item.x}</td>
+                        <td rowSpan={item.details.length} className="px-4 py-2 border border-gray-200 text-lg font-bold text-center">{item.y}</td>
+                        <td rowSpan={item.details.length} className="px-4 py-2 border border-gray-200 text-lg font-bold text-center">{item.z}</td>
                       </>
                     )}  
-                    <td className="px-4 py-2 border border-gray-200 text-xs">{detail.quantity}</td>
-                    <td className="px-4 py-2 border border-gray-200 text-xs">{detail.total_quantity}</td>
+                    <td className="px-4 py-2 border border-gray-200 text-xs text-center">{detail.quantity}</td>
+                    <td className="px-4 py-2 border border-gray-200 text-xs text-center">{detail.total_quantity}</td>
                     {detailIndex === 0 && (
                       <>
-                        <td rowSpan={item.details.length} className="px-4 py-2 border border-gray-200 text-lg font-bold">{item.total_quantity}</td>
-                        <td rowSpan={item.details.length} className="px-4 py-2 border border-gray-200 text-lg font-bold">{item.planks_needed}</td>
+                        <td rowSpan={item.details.length} className="px-4 py-2 border border-gray-200 text-lg font-bold text-center">{item.total_quantity}</td>
+                        <td rowSpan={item.details.length} className="px-4 py-2 border border-gray-200 text-lg font-bold text-center">{item.planks_needed}</td>
                       </>
                     )}  
                   </React.Fragment>
