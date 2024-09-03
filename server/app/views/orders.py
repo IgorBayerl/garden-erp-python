@@ -38,15 +38,27 @@ def calculate_order_by_size(request):
                     'total_quantity': 0,
                     'details': []
                 }
+
             total_quantity = product_piece.quantity * quantity
             pieces_by_size[size_key]['total_quantity'] += total_quantity
-            pieces_by_size[size_key]['details'].append({
-                'product': product.name,
-                'piece': piece.name,
-                'quantity': product_piece.quantity,
-                'product_quantity': quantity,
-                'total_quantity': total_quantity
-            })
+
+            # Check if the piece is already in the details list
+            piece_exists = False
+            for detail in pieces_by_size[size_key]['details']:
+                if detail['product'] == product.name and detail['piece'] == piece.name:
+                    detail['quantity'] += product_piece.quantity
+                    detail['total_quantity'] += total_quantity
+                    piece_exists = True
+                    break
+
+            if not piece_exists:
+                pieces_by_size[size_key]['details'].append({
+                    'product': product.name,
+                    'piece': piece.name,
+                    'quantity': product_piece.quantity,
+                    'product_quantity': quantity,
+                    'total_quantity': total_quantity
+                })
 
     # Determine sort order
     reverse = True if order == 'desc' else False
@@ -57,6 +69,7 @@ def calculate_order_by_size(request):
     response = sorted(pieces_by_size.values(), key=sort_function, reverse=reverse)
 
     return Response(response)
+
 
 @api_view(['POST'])
 def calculate_order_by_product(request):

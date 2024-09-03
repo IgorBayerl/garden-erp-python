@@ -15,23 +15,27 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, re_path
 from app.views.pieces import PieceView
 from app.views.products import ProductView
 from app.views.orders import calculate_order_by_size, calculate_order_by_product
+from app.views.client import IndexView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     
     # Pieces
-    path('pieces/', PieceView.as_view(), name='pieces_list_create'),  # For GET (list) and POST (create)
-    path('pieces/<int:id>/', PieceView.as_view(), name='pieces_detail_update_delete'),
+    path('api/pieces/', PieceView.as_view(), name='pieces_list_create'),  # For GET (list) and POST (create)
+    path('api/pieces/<int:id>/', PieceView.as_view(), name='pieces_detail_update_delete'),
 
     # Products
-    path('products/', ProductView.as_view(), name='products_list_create'),  # For GET (list) and POST (create)
-    path('products/<int:id>/', ProductView.as_view(), name='products_detail_update_delete'),  # For GET (retrieve), PUT (update), and DELETE (delete)
+    path('api/products/', ProductView.as_view(), name='products_list_create'),  # For GET (list) and POST (create)
+    path('api/products/<int:id>/', ProductView.as_view(), name='products_detail_update_delete'),  # For GET (retrieve), PUT (update), and DELETE (delete)
 
     # Orders
-    path('orders/calculate_order_by_size/', calculate_order_by_size, name='calculate_order_by_size'),
-    path('orders/calculate_order_by_product/', calculate_order_by_product, name='calculate_order_by_product'),
+    path('api/orders/calculate_order_by_size/', calculate_order_by_size, name='calculate_order_by_size'),
+    path('api/orders/calculate_order_by_product/', calculate_order_by_product, name='calculate_order_by_product'),
+
+    # Client Render
+    re_path(r'^.*$', IndexView.as_view(), name='index'),
 ]

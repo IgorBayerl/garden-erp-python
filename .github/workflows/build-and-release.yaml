@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:  # Allows you to trigger the workflow manually
 
 jobs:
   build:
@@ -13,6 +14,17 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
+
+    - name: Set up Node.js environment
+      uses: actions/setup-node@v3
+      with:
+        node-version: '22'
+
+    - name: Install client dependencies and build
+      run: |
+        cd client
+        yarn install
+        yarn build
 
     - name: Set up Python environment
       uses: actions/setup-python@v4
@@ -44,11 +56,19 @@ jobs:
         $shortSha = $env:GITHUB_SHA.Substring(0, 8)
         echo "BUILD_NAME=$shortSha" >> $env:GITHUB_ENV
 
+    - name: Create a zip file with the executable and static files
+      run: |
+        cd server/dist
+        mkdir GardenErp-${{ env.BUILD_NAME }}
+        mv GardenErp.exe GardenErp-${{ env.BUILD_NAME }}/
+        mv static GardenErp-${{ env.BUILD_NAME }}/
+        powershell Compress-Archive -Path GardenErp-${{ env.BUILD_NAME }} -DestinationPath GardenErp-${{ env.BUILD_NAME }}.zip
+
     - name: Archive build artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: GardenErp-executable-${{ env.BUILD_NAME }}
-        path: server/dist/GardenErp.exe  # .exe file for Windows
+        name: GardenErp-${{ env.BUILD_NAME }}
+        path: server/dist/GardenErp-${{ env.BUILD_NAME }}.zip
 
     - name: Create Release
       id: create_release
@@ -67,6 +87,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: server/dist/GardenErp.exe
-        asset_name: GardenErp-${{ env.BUILD_NAME }}.exe
-        asset_content_type: application/octet-stream
+        asset_path: server/dist/GardenErp-${{ env.BUILD_NAME }}.zip
+        asset_name: GardenErp-${{ env.BUILD_NAME }}.zip
+        asset_content_type: application/zip
