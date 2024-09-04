@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 
 interface PieceListProps {
   pieces: Piece[];
+  onSelectPiece: (piece: Piece) => void;
 }
 
-export default function PieceList({ pieces }: PieceListProps) {
+export default function PieceList({ pieces, onSelectPiece }: PieceListProps) {
   return (
     <ul className="w-full">
       {pieces.map((piece, index) => (
@@ -26,6 +27,7 @@ export default function PieceList({ pieces }: PieceListProps) {
           </div>
           <Link to="#">
             <Button
+              onClick={() => onSelectPiece(piece)}
               className="ml-4"
             >
               Edit
