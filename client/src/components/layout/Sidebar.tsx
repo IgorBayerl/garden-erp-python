@@ -20,19 +20,16 @@ export default function Sidebar() {
               icon={<Factory className="h-4 w-4" />}
               // badgeCount={6}
             />
-
             <Separator className="my-2" />
-            
-            <SidebarItem 
-              to="/pieces" 
-              label="Pieces"
-              icon={<Puzzle className="h-4 w-4" />}
-            />
-
             <SidebarItem
               to="/products"
               label="Products"
               icon={<Package className="h-4 w-4" />}
+            />
+            <SidebarItem 
+              to="/pieces" 
+              label="Pieces"
+              icon={<Puzzle className="h-4 w-4" />}
             />
           </nav>
         </div>

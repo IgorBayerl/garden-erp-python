@@ -13,8 +13,8 @@ export default function ProductList({ products }: ProductListProps) {
           {product.product_pieces && product.product_pieces.length > 0 ? (
             <ul className="mt-2 list-disc pl-5 space-y-1">
               {product.product_pieces.map((pp) => (
-                <li key={pp.piece_id}>
-                  Piece ID: {pp.piece_id} - Quantity: {pp.quantity}
+                <li key={pp.piece.id}>
+                  Piece ID: {pp.piece.id} - Quantity: {pp.quantity}
                 </li>
               ))}
             </ul>

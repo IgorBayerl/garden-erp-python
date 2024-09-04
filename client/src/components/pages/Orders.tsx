@@ -10,16 +10,20 @@ import { useGetProducts } from "@/api/products";
 import { CalculateOrderRequest, useCalculateOrderBySize } from "@/api/orders";
 import ErrorState from "@/components/layout/ErrorState";
 import SkeletonLoader from "@/components/layout/SkeletonLoader";
-import OrderBySizeTable from "../organisms/OrderBySizeTable";
-import { Printer } from "lucide-react";
+import OrderBySizeTable from "@/components/organisms/OrderBySizeTable";
+import { Printer, Trash, Ellipsis, Save } from "lucide-react";
 import { useLocalStorage } from 'usehooks-ts'
 import { useReactToPrint } from "react-to-print";
+import { Card } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+
+type OrderItem = { product: Product; quantity: number };
 
 export default function OrdersPage() {
   const { data: products, isLoading, isError } = useGetProducts();
   const [selectedProduct, setSelectedProduct] = useLocalStorage<Product | null>('order-product',null);
   const [quantity, setQuantity] = useLocalStorage<number>('order-quantity', 1);
-  const [order, setOrder] = useLocalStorage<{ product: Product; quantity: number }[]>('order', []);
+  const [order, setOrder] = useLocalStorage<OrderItem[]>('order', []);
   const { mutate: calculateOrder, data: orderResponse, isPending: isCalculating, isError: isCalculationError } = useCalculateOrderBySize();
 
   const tableRef = useRef<HTMLDivElement>(null);
@@ -51,8 +55,9 @@ export default function OrdersPage() {
     onAfterPrint: () => {},
   });
 
-
-
+  const handleClearOrder = () => {
+    setOrder([]);
+  };
 
   const removeProductFromOrder = (index: number) => {
     setOrder(order.filter((_, i) => i !== index));
@@ -71,11 +76,34 @@ export default function OrdersPage() {
     calculateOrder(orderRequest);
   }, [order, calculateOrder]);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.key.toLowerCase() === 'p') {
+        event.preventDefault(); // Prevent default print dialog
+        handlePrint(); // Call the print function
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handlePrint]); 
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 min-h-screen max-h-screen">
-      <div className="flex items-center">
+      <div className="flex justify-between">
         <h1 className="text-lg font-semibold md:text-2xl">Ordens de produção</h1>
+        <div className="flex gap-2">
+          <Button onClick={() => alert('Não implementado')} title="Salvar Ordem de Produção" disabled>
+            <Save className="h-4 w-4 mr-2" />Salvar
+          </Button>
+          <Button onClick={handleClearOrder} title="Limpar Ordem de Produção">
+            <Trash className="h-4 w-4 mr-2" />Limpar
+          </Button>
+          <Button onClick={handlePrint} title="Imprimir ( Ctrl + P )">
+            <Printer className="h-4 w-4 mr-2" />Imprimir
+          </Button>
+        </div>
       </div>
       <div className="flex flex-col flex-grow gap-4 rounded-lg border border-dashed shadow-sm overflow-hidden">
         <ResizablePanelGroup direction="horizontal" className="flex-grow">
@@ -104,23 +132,16 @@ export default function OrdersPage() {
                         onChange={(e) => setQuantity(Number(e.target.value))}
                       />
                     </div>
-                    <Button onClick={addProductToOrder} className="self-end">
+                    <Button onClick={addProductToOrder} className="self-end" title="Adicionar">
                       Adicionar
                     </Button>
                   </div>
-                  <ScrollArea className="h-full ">
-                    {order.length > 0 && (
-                      <ul className="list-disc pb-10 ">
-                        {order.map((item, index) => (
-                          <li key={index} className="flex items-center gap-2">
-                            {item.quantity} x {item.product.name}
-                            <Button onClick={() => removeProductFromOrder(index)} className="ml-2">
-                              Remover
-                            </Button>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
+                  <ScrollArea className="h-full">
+                    <div className="flex flex-col pb-10 gap-2">
+                      {order.map((item, index) => (
+                        <OrderItem key={index} index={index} item={item} remove={removeProductFromOrder} />
+                      ))}
+                    </div>
                   </ScrollArea>
                 </>
               )}
@@ -128,12 +149,9 @@ export default function OrdersPage() {
           </ResizablePanel>
           <ResizableHandle withHandle />
           <ResizablePanel minSize={60} className="flex flex-col overflow-hidden">
-            <div className="m-4 h-full">
+            <div className="m-4 h-full space-y-2">
               <div className="flex items-center gap-4 justify-between">
                 <h2 className="text-lg font-semibold">Ordem de produção</h2>
-                <Button onClick={handlePrint} className="mt-4">
-                  <Printer className="h-4 w-4" />
-                </Button>
               </div>
               <ScrollArea className="h-full">
                 {isCalculating && <p>Calculando...</p>}
@@ -148,5 +166,58 @@ export default function OrdersPage() {
         </ResizablePanelGroup>
       </div>
     </main>
+  );
+}
+
+export interface OrderItemProps {
+  index: number;
+  item: OrderItem;
+  remove: (index: number) => void;
+}
+
+export function OrderItem({ item, index, remove }: OrderItemProps) {
+
+  return (
+    <Collapsible>
+      <Card className="flex flex-col items-start justify-between gap-2 w-full p-2 shadow-sm">
+        <div className="flex justify-between w-full">
+          <div className="flex gap-2">
+            <img src="/cadeira.png" alt="Piece" className="h-16 w-16 rounded-lg object-scale-down bg-secondary aspect-square" />
+            <div>
+              <h1 className="text-lg font-semibold">{item.product.name}</h1>
+              <div className="text-sm text-muted-foreground">{item.quantity}</div>
+            </div>
+          </div>
+          <div className="flex flex-1 justify-end">
+            <div className="flex flex-col justify-between items-center h-full">
+              <Button onClick={() => remove(index)} variant="destructive" title="Remover da ordem de produção">
+                <Trash className="h-4 w-4" />
+              </Button>
+              <CollapsibleTrigger title="Mostrar Detalhes">
+                <Ellipsis className="h-4 w-4" />
+              </CollapsibleTrigger>
+            </div>
+          </div>
+        </div>
+        <CollapsibleContent className="mt-2 w-full">
+          <h2 className="text-sm font-medium">Peças:</h2>
+          <ul className="pl-4 mt-1 list-disc">
+            {item.product.product_pieces.map((piece) => (
+              <li key={`${index}_${piece.piece.id}`} className="text-sm">
+                {piece.piece.name}
+                <br />
+                Qty: {piece.quantity}
+                <br />
+                Comprimento: {piece.piece.sizeX}
+                <br />
+                Largura: {piece.piece.sizeY}
+                <br />
+                Espessura: {piece.piece.sizeZ}
+              </li>
+            ))}
+          </ul>
+        </CollapsibleContent>
+      </Card>
+    </Collapsible>
   );
 }

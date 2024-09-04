@@ -7,11 +7,11 @@ class PieceSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'sizeX', 'sizeY', 'sizeZ']
 
 class ProductPieceSerializer(serializers.ModelSerializer):
-    piece_id = serializers.PrimaryKeyRelatedField(queryset=Piece.objects.all(), source='piece')
+    piece = PieceSerializer()
 
     class Meta:
         model = ProductPiece
-        fields = ['piece_id', 'quantity']
+        fields = ['piece', 'quantity']
 
 class ProductSerializer(serializers.ModelSerializer):
     product_pieces = ProductPieceSerializer(many=True)
@@ -31,7 +31,9 @@ class ProductSerializer(serializers.ModelSerializer):
         # Add the new product pieces
         product_pieces_data = validated_data.pop('product_pieces')
         for product_piece_data in product_pieces_data:
-            ProductPiece.objects.create(product=instance, **product_piece_data)
+            piece_data = product_piece_data.pop('piece')
+            piece = Piece.objects.get(id=piece_data['id'])
+            ProductPiece.objects.create(product=instance, piece=piece, **product_piece_data)
 
         return instance
     
@@ -40,6 +42,8 @@ class ProductSerializer(serializers.ModelSerializer):
         product = Product.objects.create(**validated_data)
 
         for product_piece_data in product_pieces_data:
-            ProductPiece.objects.create(product=product, **product_piece_data)
+            piece_data = product_piece_data.pop('piece')
+            piece = Piece.objects.get(id=piece_data['id'])
+            ProductPiece.objects.create(product=product, piece=piece, **product_piece_data)
 
         return product

@@ -7,7 +7,7 @@ export type Piece = {
 };
 
 export type ProductPiece = {
-  piece_id: number;
+  piece: Piece;
   quantity: number;
 };
 
