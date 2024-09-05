@@ -31,19 +31,12 @@ export default function ProductsPage() {
     });
   };
 
-  const handleSubmit = (product: Omit<PostProduct, 'id'> | PostProduct) => {
-    if ('id' in product) {
-      // If the product has an id, it means we're updating
-      handleUpdateProduct(product as PostProduct);
-    } else {
-      // Otherwise, we're creating a new product
-      handleCreateProduct(product);
+  const handleUpdateProduct = (updatedProduct: Omit<PostProduct, 'id'>) => {
+    const requestData = {
+      id: selectedProduct?.id || 0,
+      ...updatedProduct,
     }
-  };
-  
-
-  const handleUpdateProduct = (updatedProduct: PostProduct) => {
-    updateProductMutation.mutate(updatedProduct, {
+    updateProductMutation.mutate(requestData, {
       onSuccess: () => {
         formRef.current?.resetForm();
         setSelectedProduct(null);
@@ -109,7 +102,7 @@ export default function ProductsPage() {
                 <ScrollArea className="h-full">
                   <ProductForm
                     ref={formRef}
-                    onSubmit={handleSubmit}
+                    onSubmit={selectedProduct ? handleUpdateProduct : handleCreateProduct}
                     initialValues={selectedProduct || undefined}
                     isEditing={!!selectedProduct}
                     pieces={pieces}  // Pass the fetched pieces to the ProductForm

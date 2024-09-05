@@ -11,8 +11,8 @@ import { ComboboxPiece } from '@/components/organisms/ComboboxPiece';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface ProductFormProps {
-  onSubmit: (product: Omit<PostProduct, 'id'> | PostProduct) => void;
-  initialValues?: Omit<PostProduct, 'id'> | PostProduct;
+  onSubmit: (product: Omit<PostProduct, 'id'>) => void;
+  initialValues?: PostProduct;
   isEditing?: boolean;
   pieces: Piece[];
 }
@@ -35,7 +35,7 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing, pieces }: 
   const [productPieces, setProductPieces] = useState<PostProductPiece[]>(initialValues?.product_pieces || []);
 
   const form = useForm<ProductFormValues>({
-    resolver: zodResolver(productSchema),
+    // resolver: zodResolver(productSchema), // Use the zod schema to validate the form data
     defaultValues: {
       name: initialValues?.name || '',
       product_pieces: initialValues?.product_pieces || [],
@@ -63,20 +63,11 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing, pieces }: 
   const buttonText = isEditing ? `Atualizar produto` : 'Adicionar produto';
 
   const onFormSubmit = (values: ProductFormValues) => {
-    if (isEditing && initialValues && 'id' in initialValues) {
-      // Updating a product, include the id
-      onSubmit({
-        id: initialValues.id,
-        name: values.name,
-        product_pieces: productPieces,
-      } as PostProduct);
-    } else {
-      // Creating a product, omit the id
-      onSubmit({
-        name: values.name,
-        product_pieces: productPieces,
-      });
-    }
+    console.log('Form Submitted:', values);
+    onSubmit({
+      name: values.name,
+      product_pieces: productPieces,
+    });
   };
 
   const handleAddPiece = () => {
@@ -91,13 +82,17 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing, pieces }: 
     setProductPieces(productPieces.filter((_, i) => i !== index));
   };
 
-  //TODO: Fix this
-  const handleResetField = (field: keyof ProductFormValues) => { // Reset the form to the initial values
-    console.log('handleResetField', field);
+  const handleResetField = (field: keyof ProductFormValues) => {
+    console.log(field);
     reset({
       name: initialValues?.name || '',
       product_pieces: initialValues?.product_pieces || [],
     });
+  };
+
+  const handleSubmit = (values: ProductFormValues) => {
+    console.log('Submitting form:', values);
+    onSubmit(values);
   };
 
   return (
@@ -180,7 +175,7 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing, pieces }: 
         </div>
 
         <div className="flex space-x-2">
-          <Button type="submit">
+          <Button type="submit" onClick={() => handleSubmit(form.getValues())}>
             <Save className="h-4 w-4 mr-2" />{buttonText}
           </Button>
           <Button disabled={!isEditing} variant="outline" onClick={() => reset()}>
