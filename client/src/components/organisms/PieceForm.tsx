@@ -68,7 +68,7 @@ const PieceForm = forwardRef(({ onSubmit, initialValues, isEditing }: PieceFormP
   return (
     <Form {...form}>
       <div>
-        <h1 className="text-lg font-semibold md:text-2xl">{title}</h1>
+        <h1 className="text-lg font-semibold md:text-2xl px-1">{title}</h1>
       </div>
       <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-8 px-1">
         <FormField

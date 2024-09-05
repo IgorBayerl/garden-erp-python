@@ -11,6 +11,17 @@ export type ProductPiece = {
   quantity: number;
 };
 
+export type PostProductPiece = {
+  piece_id: number;
+  quantity: number;
+};
+
+export type PostProduct = {
+  id: number;
+  name: string;
+  product_pieces: PostProductPiece[];
+};
+
 export type Product = {
   id: number;
   name: string;

@@ -190,7 +190,11 @@ export function OrderItem({ item, index, remove }: OrderItemProps) {
           </div>
           <div className="flex flex-1 justify-end">
             <div className="flex flex-col justify-between items-center h-full">
-              <Button onClick={() => remove(index)} variant="destructive" title="Remover da ordem de produção">
+              <Button 
+                onClick={() => remove(index)} 
+                variant="ghost" 
+                title="Remover da ordem de produção"
+              >
                 <Trash className="h-4 w-4" />
               </Button>
               <CollapsibleTrigger title="Mostrar Detalhes">

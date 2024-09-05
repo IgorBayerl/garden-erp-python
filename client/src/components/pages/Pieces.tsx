@@ -47,10 +47,9 @@ export default function PiecesPage() {
   };
 
   const handleClosePanel = () => {
-    setIsPanelOpen(false); // Close the panel
-    setSelectedPiece(null); // Deselect any selected piece
+    setIsPanelOpen(false);
+    setSelectedPiece(null);
   };
-
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 min-h-screen max-h-screen">
@@ -73,7 +72,11 @@ export default function PiecesPage() {
 
       {!isLoading && !isError && pieces && pieces.length > 0 && (
         <div className="flex flex-1 overflow-hidden">
-          <ResizablePanelGroup direction="horizontal" className="flex-grow">
+          <ResizablePanelGroup 
+            direction="horizontal" 
+            className="flex-grow"
+            autoSaveId={isPanelOpen ? "pieces_view" : undefined}
+          >
             <ResizablePanel minSize={32} className="flex flex-col overflow-hidden">
               <div className="flex flex-1 flex-col rounded-lg border border-dashed shadow-sm overflow-hidden">
                 <ScrollArea className="h-full">
@@ -82,23 +85,42 @@ export default function PiecesPage() {
               </div>
             </ResizablePanel>
             <ResizableHandle withHandle className="m-4" />
-            {isPanelOpen && (
-              <>
-                <ResizablePanel minSize={32} defaultSize={32} className="flex flex-col overflow-hidden">
-                  <ScrollArea className="h-full">
-                    <Button variant="ghost" onClick={handleClosePanel}>
-                      <X className="h-4 w-4" />
+
+            <ResizablePanel
+              minSize={32}
+              defaultSize={32}
+              className="flex flex-col overflow-hidden relative"
+              autoSave="pieces_view"
+            >
+              <div
+                className={`transition-all duration-150 ease-in-out absolute inset-0 ${
+                  isPanelOpen ? "translate-x-0 opacity-100 visible" : "translate-x-full opacity-0 invisible"
+                } flex flex-col h-full`}
+              >
+                <Button variant="ghost" onClick={handleClosePanel}>
+                  <X className="h-4 w-4" />
+                </Button>
+                <ScrollArea className="h-full">
+                  <PieceForm
+                    ref={formRef}
+                    onSubmit={selectedPiece ? handleUpdatePiece : handleCreatePiece}
+                    initialValues={selectedPiece || undefined}
+                    isEditing={!!selectedPiece}
+                  />
+                </ScrollArea>
+              </div>
+
+              {!isPanelOpen && (
+                <div className="absolute inset-0 flex items-center justify-center text-center p-4">
+                  <div>
+                    <Button onClick={handleNewItem} className="mb-4">
+                      <Plus className="h-4 w-4 mr-2" />Adicionar novo item
                     </Button>
-                    <PieceForm
-                      ref={formRef}
-                      onSubmit={selectedPiece ? handleUpdatePiece : handleCreatePiece}
-                      initialValues={selectedPiece || undefined}
-                      isEditing={!!selectedPiece}
-                    />
-                  </ScrollArea>
-                </ResizablePanel>
-              </>
-            )}
+                    <p className="text-muted-foreground">Ou selecione um item para editar</p>
+                  </div>
+                </div>
+              )}
+            </ResizablePanel>
           </ResizablePanelGroup>
         </div>
       )}
