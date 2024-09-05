@@ -5,6 +5,7 @@ import PiecesPage from "@/components/pages/Pieces";
 import ProductsPage from "@/components/pages/Products";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { Toaster } from "@/components/ui/sonner";
 
 const queryClient = new QueryClient()
 
@@ -20,6 +21,7 @@ export default function App() {
         </Routes>
       </Layout>
       <ReactQueryDevtools initialIsOpen={false} />
+      <Toaster />
     </QueryClientProvider>
   )
 }

@@ -1,6 +1,8 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from './api';
-import { Piece } from './types';
+import { APIErrorResponse, DeletePieceErrorResponse, Piece } from './types';
+import { toast } from 'sonner';
+import { AxiosError } from 'axios';
 
 // Fetch all pieces
 export const useGetPieces = () => {
@@ -26,27 +28,87 @@ export const useGetPieceById = (id: number) => {
 
 // Create a new piece
 export const useCreatePiece = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (newPiece: Omit<Piece, 'id'>) => {
       return api.post('/pieces/', newPiece);
+    },
+    onSuccess: () => {
+      // Invalidate the 'pieces' query to refetch the list of pieces
+      queryClient.invalidateQueries({
+        queryKey: ['pieces'],
+        exact: true,
+      });
+      toast.success('Peça adicionada com sucesso');
+    },
+    onError: (error: AxiosError<APIErrorResponse>) => {
+      // Extract the error message if it exists
+      const errorMessage = error.response?.data?.message || 'Erro ao adicionar peça';
+      toast.error(errorMessage);
     },
   });
 };
 
 // Update an existing piece
 export const useUpdatePiece = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (updatedPiece: Piece) => {
       return api.put(`/pieces/${updatedPiece.id}/`, updatedPiece);
+    },
+    onSuccess: () => {
+      // Invalidate the 'pieces' query to refetch the list of pieces
+      queryClient.invalidateQueries({
+        queryKey: ['pieces'],
+        exact: true,
+      });
+      toast.success('Peça atualizada com sucesso');
+    },
+    onError: (error: AxiosError<APIErrorResponse>) => {
+      // Extract the error message if it exists
+      const errorMessage = error.response?.data?.message || 'Erro ao atualizar peça';
+      toast.error(errorMessage);
     },
   });
 };
 
 // Delete a piece
 export const useDeletePiece = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (id: number) => {
       return api.delete(`/pieces/${id}/`);
     },
+    onSuccess: () => {
+      // Invalidate the 'pieces' query to refetch the list of pieces
+      queryClient.invalidateQueries({
+        queryKey: ['pieces'],
+        exact: true,
+      });
+      toast.success('Peça excluída com sucesso');
+    },
+    onError: (error: AxiosError<DeletePieceErrorResponse>) => {
+      // Extract the error message if it exists
+      handleDeletePieceError(error);
+    },
   });
 };
+
+const handleDeletePieceError = (error: AxiosError<DeletePieceErrorResponse>) => {
+  const errorMessage = error.response?.data?.message || 'Erro ao excluir peça';
+  const relatedProducts = error.response?.data?.related_products;
+
+  let detailedErrorMessage = errorMessage;
+
+  if (relatedProducts && relatedProducts.length > 0) {
+    const productNames = relatedProducts.map(p => `${p.product_name}`).join(', ');
+    detailedErrorMessage += `\nProdutos relacionados: ${productNames}`;
+  }
+
+  toast.error(detailedErrorMessage);
+};
+
+

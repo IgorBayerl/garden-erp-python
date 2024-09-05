@@ -16,23 +16,20 @@ export default function Sidebar() {
           <nav className="grid items-start text-sm font-medium px-4">
             <SidebarItem
               to="/orders"
-              label="Orders"
+              label="Ordens de produção"
               icon={<Factory className="h-4 w-4" />}
               // badgeCount={6}
             />
-
             <Separator className="my-2" />
-            
-            <SidebarItem 
-              to="/pieces" 
-              label="Pieces"
-              icon={<Puzzle className="h-4 w-4" />}
-            />
-
             <SidebarItem
               to="/products"
-              label="Products"
+              label="Produtos"
               icon={<Package className="h-4 w-4" />}
+            />
+            <SidebarItem 
+              to="/pieces" 
+              label="Peças"
+              icon={<Puzzle className="h-4 w-4" />}
             />
           </nav>
         </div>

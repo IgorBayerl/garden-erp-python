@@ -10,6 +10,19 @@ from django.db import connections, OperationalError
 from django.db.migrations.executor import MigrationExecutor
 from django.core.exceptions import ImproperlyConfigured
 
+def show_ascii_art():
+    """Display ASCII art on the terminal."""
+    art = r"""
+ _____               _             
+|  __ \             | |            
+| |  \/ __ _ _ __ __| | ___ _ __   
+| | __ / _` | '__/ _` |/ _ \ '_ \  
+| |_\ \ (_| | | | (_| |  __/ | | | 
+ \____/\__,_|_|  \__,_|\___|_| |_| 
+                                   
+    """
+    print(art)
+
 def run_migrations():
     """Run database migrations if needed."""
     try:
@@ -44,6 +57,11 @@ def open_browser():
     """Open the browser to the Django server URL."""
     webbrowser.open_new("http://localhost:8000")
 
+def handle_open_browser():
+    """Handle the opening of the browser."""
+    if os.environ.get('RUN_MAIN') != 'true':
+        threading.Thread(target=open_browser).start()
+
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project.settings')
@@ -68,9 +86,10 @@ def main():
         sys.argv.extend(['runserver', '--noreload'])
 
     # Check if the command is 'runserver' and only then open the browser
-    if 'runserver' in sys.argv and os.environ.get('RUN_MAIN') != 'true':
+    if 'runserver' in sys.argv and getattr(sys, 'frozen', False):
         # Start a new thread to open the browser
-        threading.Thread(target=open_browser).start()
+        handle_open_browser()
+        show_ascii_art()
 
     execute_from_command_line(sys.argv)
 
