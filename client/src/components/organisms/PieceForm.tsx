@@ -5,6 +5,8 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '
 import { Piece } from '@/api/types';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { forwardRef, useEffect, useImperativeHandle } from 'react';
+import { Undo, Save } from 'lucide-react';
 
 interface PieceFormProps {
   onSubmit: (piece: Omit<Piece, 'id'>) => void;
@@ -21,30 +23,52 @@ const pieceSchema = z.object({
 
 type PieceFormValues = z.infer<typeof pieceSchema>;
 
-export default function PieceForm({ onSubmit, initialValues, isEditing }: PieceFormProps) {
+const PieceForm = forwardRef(({ onSubmit, initialValues, isEditing }: PieceFormProps, ref) => {
   const form = useForm<PieceFormValues>({
     resolver: zodResolver(pieceSchema),
     defaultValues: {
       name: initialValues?.name || '',
-      sizeX: initialValues?.sizeX || 1,
-      sizeY: initialValues?.sizeY || 1,
-      sizeZ: initialValues?.sizeZ || 1,
+      sizeX: initialValues?.sizeX || 0,
+      sizeY: initialValues?.sizeY || 0,
+      sizeZ: initialValues?.sizeZ || 0,
     },
   });
+
+  const { reset, setValue } = form;
+
+  useImperativeHandle(ref, () => ({
+    resetForm: () => reset({
+      name: initialValues?.name || '',
+      sizeX: initialValues?.sizeX || 0,
+      sizeY: initialValues?.sizeY || 0,
+      sizeZ: initialValues?.sizeZ || 0,
+    }),
+  }));
+
+  useEffect(() => {
+    reset({
+      name: initialValues?.name || '',
+      sizeX: initialValues?.sizeX || 0,
+      sizeY: initialValues?.sizeY || 0,
+      sizeZ: initialValues?.sizeZ || 0,
+    });
+  }, [initialValues, reset]);
+
+  const title = isEditing ? `Editando peça` : 'Adicionar peça';
+  const buttonText = isEditing ? `Atualizar peça` : 'Adicionar peça';
 
   const onFormSubmit = (values: PieceFormValues) => {
     onSubmit(values);
   };
 
-  const title = isEditing ? `Editando peça` : 'Adicionar peça';
-  const subText = initialValues?.name
-  const buttonText = isEditing ? `Atualizar peça` : 'Adicionar peça';
+  const handleResetField = (field: keyof PieceFormValues) => {
+    setValue(field, initialValues ? initialValues[field] : '');
+  };
 
   return (
     <Form {...form}>
       <div>
         <h1 className="text-lg font-semibold md:text-2xl">{title}</h1>
-        <h3>{subText}</h3>
       </div>
       <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-8 px-1">
         <FormField
@@ -53,9 +77,19 @@ export default function PieceForm({ onSubmit, initialValues, isEditing }: PieceF
           render={({ field }) => (
             <FormItem>
               <FormLabel>Nome</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter name" {...field} />
-              </FormControl>
+              <div className="flex items-center space-x-2">
+                <FormControl>
+                  <Input title="Nome" placeholder="Nome" {...field} />
+                </FormControl>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleResetField('name')}
+                  type="button"
+                >
+                  <Undo className="h-4 w-4" />
+                </Button>
+              </div>
               <FormMessage />
             </FormItem>
           )}
@@ -66,9 +100,19 @@ export default function PieceForm({ onSubmit, initialValues, isEditing }: PieceF
           render={({ field }) => (
             <FormItem>
               <FormLabel>Comprimento</FormLabel>
-              <FormControl>
-                <Input type="number" min={1} placeholder="Comprimento" {...field} />
-              </FormControl>
+              <div className="flex items-center space-x-2">
+                <FormControl>
+                  <Input type="number" title="Comprimento" placeholder="Comprimento" {...field} />
+                </FormControl>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleResetField('sizeX')}
+                  type="button"
+                >
+                  <Undo className="h-4 w-4" />
+                </Button>
+              </div>
               <FormMessage />
             </FormItem>
           )}
@@ -79,9 +123,19 @@ export default function PieceForm({ onSubmit, initialValues, isEditing }: PieceF
           render={({ field }) => (
             <FormItem>
               <FormLabel>Largura</FormLabel>
-              <FormControl>
-                <Input type="number" min={1} placeholder="Largura" {...field} />
-              </FormControl>
+              <div className="flex items-center space-x-2">
+                <FormControl>
+                  <Input type="number" title="Largura" placeholder="Largura" {...field} />
+                </FormControl>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleResetField('sizeY')}
+                  type="button"
+                >
+                  <Undo className="h-4 w-4" />
+                </Button>
+              </div>
               <FormMessage />
             </FormItem>
           )}
@@ -92,17 +146,34 @@ export default function PieceForm({ onSubmit, initialValues, isEditing }: PieceF
           render={({ field }) => (
             <FormItem>
               <FormLabel>Espessura</FormLabel>
-              <FormControl>
-                <Input type="number" min={1} placeholder="Espessura" {...field} />
-              </FormControl>
+              <div className="flex items-center space-x-2">
+                <FormControl>
+                  <Input type="number" title="Espessura" placeholder="Espessura" {...field} />
+                </FormControl>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleResetField('sizeZ')}
+                  type="button"
+                >
+                  <Undo className="h-4 w-4" />
+                </Button>
+              </div>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit">
-          {buttonText}
-        </Button>
+        <div className="flex space-x-2">
+          <Button type="submit">
+            <Save className="h-4 w-4 mr-2" />{buttonText}
+          </Button>
+          <Button disabled={!isEditing} variant="outline" onClick={() => reset()}>
+            <Undo className="h-4 w-4 mr-2" />Cancelar
+          </Button>
+        </div>
       </form>
     </Form>
   );
-}
+});
+
+export default PieceForm;

@@ -16,3 +16,17 @@ export type Product = {
   name: string;
   product_pieces: ProductPiece[];
 };
+
+export interface RelatedProduct {
+  product_id: number;
+  product_name: string;
+  quantity: number;
+}
+
+export interface APIErrorResponse {
+  message: string;
+}
+
+export interface DeletePieceErrorResponse extends APIErrorResponse {
+  related_products: RelatedProduct[];
+}
