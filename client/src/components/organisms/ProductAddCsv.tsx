@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -16,7 +16,7 @@ type ProductFormValues = z.infer<typeof productSchema>;
 
 export default function ProductAddCsv() {
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
-  const { register, handleSubmit, formState: { errors }, setValue } = useForm<ProductFormValues>({
+  const { register, handleSubmit, formState: { errors }, setValue, reset } = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
   });
 
@@ -32,7 +32,13 @@ export default function ProductAddCsv() {
     formData.append('product_name', data.productName);
     formData.append('file', selectedFile);
 
-    uploadCsvMutation.mutate(formData);
+    uploadCsvMutation.mutate(formData, {
+      onSuccess: () => {
+        // Clear the form inputs after a successful submission
+        reset(); // Reset the form fields (product name)
+        setSelectedFile(undefined); // Clear the selected file
+      }
+    });
   };
 
   return (
@@ -59,7 +65,7 @@ export default function ProductAddCsv() {
             setValue('file', files[0]); // Update form state with the file
           }} selectedFile={selectedFile} />
           {errors.file && (
-            <p className="text-red-500 text-xs">Slecione um arquivo CSV</p>
+            <p className="text-red-500 text-xs">Selecione um arquivo CSV</p>
           )}
         </div>
 

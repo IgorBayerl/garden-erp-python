@@ -116,7 +116,7 @@ export const useUploadCsvProduct = () => {
         queryKey: ['products'],
         exact: true,
       });
-      toast.success('CSV importado com sucesso');
+      toast.success('Produto importado com sucesso');
     },
     onError: (error: AxiosError<APIErrorResponse>) => {
       // Extract the error message if it exists
