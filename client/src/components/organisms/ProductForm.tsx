@@ -130,6 +130,7 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing }: ProductF
                   size="sm"
                   onClick={() => handleResetField('name')}
                   type="button"
+                  tabIndex={-1}
                 >
                   <Undo className="h-4 w-4" />
                 </Button>

@@ -89,32 +89,13 @@ export default function ProductsPage() {
               </div>
             </ResizablePanel>
             <ResizableHandle withHandle className="m-4" />
-
             <ResizablePanel
               minSize={32}
               defaultSize={32}
-              className="flex flex-col overflow-hidden relative"
+              className="flex flex-col overflow-hidden"
               autoSave="products_view"
             >
-              <div
-                className={`transition-all duration-150 ease-in-out absolute inset-0 ${
-                  isPanelOpen ? "translate-x-0 opacity-100 visible" : "translate-x-full opacity-0 invisible"
-                } flex flex-col h-full`}
-              >
-                <Button variant="ghost" onClick={handleClosePanel}>
-                  <X className="h-4 w-4" />
-                </Button>
-                <ScrollArea className="h-full">
-                  <ProductForm
-                    ref={formRef}
-                    onSubmit={selectedProduct ? handleUpdateProduct : handleCreateProduct}
-                    initialValues={selectedProduct || undefined}
-                    isEditing={!!selectedProduct}
-                  />
-                </ScrollArea>
-              </div>
-
-              <Tabs defaultValue="form" className="w-full">
+              <Tabs defaultValue="import" className="h-full">
                 <TabsList>
                   <TabsTrigger disabled={false} value="form">Formulario</TabsTrigger>
                   <TabsTrigger disabled={false} value="import">Importar CSV</TabsTrigger>
@@ -122,14 +103,16 @@ export default function ProductsPage() {
                 <TabsContent value="import">
                   <ProductAddCsv />
                 </TabsContent>
-                <TabsContent value="form">
+                <TabsContent value="form" className="h-full overflow-hidden">
                   <ScrollArea className="h-full">
-                    <ProductForm
-                      ref={formRef}
-                      onSubmit={selectedProduct ? handleUpdateProduct : handleCreateProduct}
-                      initialValues={selectedProduct || undefined}
-                      isEditing={!!selectedProduct}
-                    />
+                    <div className="pb-14">
+                      <ProductForm
+                        ref={formRef}
+                        onSubmit={selectedProduct ? handleUpdateProduct : handleCreateProduct}
+                        initialValues={selectedProduct || undefined}
+                        isEditing={!!selectedProduct}
+                      />
+                    </div>
                   </ScrollArea>
                 </TabsContent>
               </Tabs>
