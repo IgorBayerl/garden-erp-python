@@ -5,7 +5,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '
 import { Piece } from '@/api/types';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { forwardRef, useEffect, useImperativeHandle } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useMemo } from 'react';
 import { Undo, Save } from 'lucide-react';
 
 interface PieceFormProps {
@@ -24,35 +24,29 @@ const pieceSchema = z.object({
 type PieceFormValues = z.infer<typeof pieceSchema>;
 
 const PieceForm = forwardRef(({ onSubmit, initialValues, isEditing }: PieceFormProps, ref) => {
+  
+  const defaultValues = useMemo(() => ({
+    name: initialValues?.name || '',
+    sizeX: initialValues?.sizeX || 0,
+    sizeY: initialValues?.sizeY || 0,
+    sizeZ: initialValues?.sizeZ || 0,
+  }), [initialValues]);
+
   const form = useForm<PieceFormValues>({
     resolver: zodResolver(pieceSchema),
-    defaultValues: {
-      name: initialValues?.name || '',
-      sizeX: initialValues?.sizeX || 0,
-      sizeY: initialValues?.sizeY || 0,
-      sizeZ: initialValues?.sizeZ || 0,
-    },
+    defaultValues: defaultValues,
   });
 
   const { reset, setValue } = form;
 
   useImperativeHandle(ref, () => ({
-    resetForm: () => reset({
-      name: initialValues?.name || '',
-      sizeX: initialValues?.sizeX || 0,
-      sizeY: initialValues?.sizeY || 0,
-      sizeZ: initialValues?.sizeZ || 0,
-    }),
+    resetForm: () => reset(defaultValues),
   }));
 
+  // When initial values change, reset form to default values
   useEffect(() => {
-    reset({
-      name: initialValues?.name || '',
-      sizeX: initialValues?.sizeX || 0,
-      sizeY: initialValues?.sizeY || 0,
-      sizeZ: initialValues?.sizeZ || 0,
-    });
-  }, [initialValues, reset]);
+    reset(defaultValues);
+  }, [defaultValues, initialValues, reset]);
 
   const title = isEditing ? `Editando peça` : 'Adicionar peça';
   const buttonText = isEditing ? `Atualizar peça` : 'Adicionar peça';
@@ -68,7 +62,7 @@ const PieceForm = forwardRef(({ onSubmit, initialValues, isEditing }: PieceFormP
   return (
     <Form {...form}>
       <div>
-        <h1 className="text-lg font-semibold md:text-2xl px-1">{title}</h1>
+        <h1 className="text-lg font-semibold md:text-xl px-1 pt-6">{title}</h1>
       </div>
       <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-8 px-1">
         <FormField
@@ -86,6 +80,7 @@ const PieceForm = forwardRef(({ onSubmit, initialValues, isEditing }: PieceFormP
                   size="sm"
                   onClick={() => handleResetField('name')}
                   type="button"
+                  tabIndex={-1}
                 >
                   <Undo className="h-4 w-4" />
                 </Button>
@@ -109,6 +104,7 @@ const PieceForm = forwardRef(({ onSubmit, initialValues, isEditing }: PieceFormP
                   size="sm"
                   onClick={() => handleResetField('sizeX')}
                   type="button"
+                  tabIndex={-1}
                 >
                   <Undo className="h-4 w-4" />
                 </Button>
@@ -132,6 +128,7 @@ const PieceForm = forwardRef(({ onSubmit, initialValues, isEditing }: PieceFormP
                   size="sm"
                   onClick={() => handleResetField('sizeY')}
                   type="button"
+                  tabIndex={-1}
                 >
                   <Undo className="h-4 w-4" />
                 </Button>
@@ -155,6 +152,7 @@ const PieceForm = forwardRef(({ onSubmit, initialValues, isEditing }: PieceFormP
                   size="sm"
                   onClick={() => handleResetField('sizeZ')}
                   type="button"
+                  tabIndex={-1}
                 >
                   <Undo className="h-4 w-4" />
                 </Button>

@@ -5,7 +5,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '
 import { Piece, PostProduct, PostProductPiece } from '@/api/types';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from 'react';
 import { Undo, Save, Plus, Trash2 } from 'lucide-react';
 import { ComboboxPiece } from '@/components/organisms/ComboboxPiece';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -38,36 +38,35 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing }: ProductF
 
   const { data: pieces, isLoading: piecesIsLoading, isError: piecesIsError } = useGetPieces();
 
+  const defaultValues = useMemo(() => ({
+    name: initialValues?.name || '',
+    product_pieces: initialValues?.product_pieces || [],
+  }), [initialValues]); // changed lines
+
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema), // Use the zod schema to validate the form data
-    defaultValues: {
-      name: initialValues?.name || '',
-      product_pieces: initialValues?.product_pieces || [],
-    },
+    defaultValues: defaultValues,
   });
 
   const { reset } = form;
 
+  const resetValues = useCallback(() => {
+    reset(defaultValues);
+    setProductPieces(defaultValues.product_pieces);
+  }, [defaultValues, reset]);
+
   useImperativeHandle(ref, () => ({
-    resetForm: () => reset({
-      name: initialValues?.name || '',
-      product_pieces: initialValues?.product_pieces || [],
-    }),
+    resetForm: () => resetValues(),
   }));
 
   useEffect(() => {
-    reset({
-      name: initialValues?.name || '',
-      product_pieces: initialValues?.product_pieces || [],
-    });
-    setProductPieces(initialValues?.product_pieces || []);
-  }, [initialValues, reset]);
+    resetValues()
+  }, [initialValues, resetValues]);
 
   const title = isEditing ? `Editando produto` : 'Adicionar produto';
   const buttonText = isEditing ? `Atualizar produto` : 'Adicionar produto';
 
   const onFormSubmit = (values: ProductFormValues) => {
-    console.log('Form Submitted:', values);
     onSubmit({
       name: values.name,
       product_pieces: productPieces,
@@ -101,11 +100,7 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing }: ProductF
   },[form, productPieces])
 
   const handleResetAll = () => {
-    reset({
-      name: initialValues?.name || '',
-      product_pieces: initialValues?.product_pieces || [],
-    });
-    setProductPieces(initialValues?.product_pieces || []);
+    resetValues()
   };
 
   const handleResetField = (field: keyof ProductFormValues) => {
@@ -117,7 +112,7 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing }: ProductF
   return (
     <Form {...form}>
       <div>
-        <h1 className="text-lg font-semibold md:text-2xl px-1">{title}</h1>
+        <h1 className="text-lg font-semibold md:text-xl px-1 pt-6">{title}</h1>
       </div>
       <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-8 px-1">
         <FormField

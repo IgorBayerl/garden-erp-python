@@ -10,6 +10,8 @@ import { useRef, useState } from "react";
 import { PostProduct, Product } from "@/api/types";
 import { X, Plus } from "lucide-react";
 import { convertToPostProduct } from "@/lib/utils"; // Import the utility function
+import ProductAddCsv from "../organisms/ProductAddCsv";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 
 export default function ProductsPage() {
   const { data: products, isLoading: productsLoading, isError: productsError } = useGetProducts();
@@ -66,9 +68,11 @@ export default function ProductsPage() {
     <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 min-h-screen max-h-screen">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold md:text-2xl">Produtos</h1>
-        <Button onClick={handleNewItem}>
-          <Plus className="h-4 w-4 mr-2" />Adicionar novo produto
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={handleNewItem}>
+            <Plus className="h-4 w-4 mr-2" />Adicionar novo produto
+          </Button>
+        </div>
       </div>
 
       {(isLoadingState) && <SkeletonLoader />}
@@ -110,16 +114,25 @@ export default function ProductsPage() {
                 </ScrollArea>
               </div>
 
-              {!isPanelOpen && (
-                <div className="absolute inset-0 flex items-center justify-center text-center p-4">
-                  <div>
-                    <Button onClick={handleNewItem} className="mb-4">
-                      <Plus className="h-4 w-4 mr-2" />Adicionar novo produto
-                    </Button>
-                    <p className="text-muted-foreground">Ou selecione um produto para editar</p>
-                  </div>
-                </div>
-              )}
+              <Tabs defaultValue="form" className="w-full">
+                <TabsList>
+                  <TabsTrigger disabled={false} value="form">Formulario</TabsTrigger>
+                  <TabsTrigger disabled={false} value="import">Importar CSV</TabsTrigger>
+                </TabsList>
+                <TabsContent value="import">
+                  <ProductAddCsv />
+                </TabsContent>
+                <TabsContent value="form">
+                  <ScrollArea className="h-full">
+                    <ProductForm
+                      ref={formRef}
+                      onSubmit={selectedProduct ? handleUpdateProduct : handleCreateProduct}
+                      initialValues={selectedProduct || undefined}
+                      isEditing={!!selectedProduct}
+                    />
+                  </ScrollArea>
+                </TabsContent>
+              </Tabs>
             </ResizablePanel>
           </ResizablePanelGroup>
         </div>

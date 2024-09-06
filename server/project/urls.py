@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, re_path
 from app.views.pieces import PieceView
-from app.views.products import ProductView
+from app.views.products import ProductView, CSVUploadView
 from app.views.orders import calculate_order_by_size, calculate_order_by_product
 from app.views.client import IndexView
 
@@ -31,6 +31,7 @@ urlpatterns = [
     # Products
     path('api/products/', ProductView.as_view(), name='products_list_create'),  # For GET (list) and POST (create)
     path('api/products/<int:id>/', ProductView.as_view(), name='products_detail_update_delete'),  # For GET (retrieve), PUT (update), and DELETE (delete)
+    path('api/products/upload-csv/', CSVUploadView.as_view(), name='csv-upload'),
 
     # Orders
     path('api/orders/calculate_order_by_size/', calculate_order_by_size, name='calculate_order_by_size'),
