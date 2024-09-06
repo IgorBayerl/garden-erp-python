@@ -10,11 +10,9 @@ import { useRef, useState } from "react";
 import { PostProduct, Product } from "@/api/types";
 import { X, Plus } from "lucide-react";
 import { convertToPostProduct } from "@/lib/utils"; // Import the utility function
-import { useGetPieces } from "@/api/pieces";
 
 export default function ProductsPage() {
   const { data: products, isLoading: productsLoading, isError: productsError } = useGetProducts();
-  const { data: pieces, isLoading: piecesLoading, isError: piecesError } = useGetPieces();
 
   const createProductMutation = useCreateProduct();
   const updateProductMutation = useUpdateProduct();
@@ -61,6 +59,9 @@ export default function ProductsPage() {
     setSelectedProduct(null);
   };
 
+  const isLoadingState = productsLoading;
+  const isErrorState = productsError;
+
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 min-h-screen max-h-screen">
       <div className="flex items-center justify-between">
@@ -70,10 +71,10 @@ export default function ProductsPage() {
         </Button>
       </div>
 
-      {(productsLoading || piecesLoading) && <SkeletonLoader />}
-      {(productsError || piecesError) && <ErrorState />}
+      {(isLoadingState) && <SkeletonLoader />}
+      {(isErrorState) && <ErrorState />}
 
-      {!productsLoading && !productsError && products && pieces && (
+      {!productsLoading && !productsError && products && (
         <div className="flex flex-1 overflow-hidden">
           <ResizablePanelGroup direction="horizontal" className="flex-grow">
             <ResizablePanel minSize={32} className="flex flex-col overflow-hidden">
@@ -105,7 +106,6 @@ export default function ProductsPage() {
                     onSubmit={selectedProduct ? handleUpdateProduct : handleCreateProduct}
                     initialValues={selectedProduct || undefined}
                     isEditing={!!selectedProduct}
-                    pieces={pieces}  // Pass the fetched pieces to the ProductForm
                   />
                 </ScrollArea>
               </div>
