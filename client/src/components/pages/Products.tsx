@@ -8,7 +8,7 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/componen
 import ProductForm from "@/components/organisms/ProductForm";
 import { useRef, useState } from "react";
 import { PostProduct, Product } from "@/api/types";
-import { X, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { convertToPostProduct } from "@/lib/utils"; // Import the utility function
 import ProductAddCsv from "../organisms/ProductAddCsv";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
@@ -19,7 +19,6 @@ export default function ProductsPage() {
   const createProductMutation = useCreateProduct();
   const updateProductMutation = useUpdateProduct();
   const [selectedProduct, setSelectedProduct] = useState<PostProduct | null>(null); // Use PostProduct including id for updates
-  const [isPanelOpen, setIsPanelOpen] = useState(false);
   const formRef = useRef<{ resetForm: () => void }>(null);
 
   const handleCreateProduct = (newProduct: Omit<PostProduct, 'id'>) => {
@@ -47,18 +46,11 @@ export default function ProductsPage() {
   const handleSelectProduct = (product: Product) => {
     const postProduct = convertToPostProduct(product);
     setSelectedProduct({ ...postProduct, id: product.id }); // Include the id for updates
-    setIsPanelOpen(true);
   };
 
   const handleNewItem = () => {
     setSelectedProduct(null);
-    setIsPanelOpen(true);
     formRef.current?.resetForm();
-  };
-
-  const handleClosePanel = () => {
-    setIsPanelOpen(false);
-    setSelectedProduct(null);
   };
 
   const isLoadingState = productsLoading;
