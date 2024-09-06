@@ -1,4 +1,4 @@
-// import { zodResolver } from '@hookform/resolvers/zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
@@ -9,12 +9,14 @@ import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { Undo, Save, Plus, Trash2 } from 'lucide-react';
 import { ComboboxPiece } from '@/components/organisms/ComboboxPiece';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useGetPieces } from '@/api/pieces';
+import SkeletonLoader from '../layout/SkeletonLoader';
+import ErrorState from '../layout/ErrorState';
 
 interface ProductFormProps {
   onSubmit: (product: Omit<PostProduct, 'id'>) => void;
   initialValues?: PostProduct;
   isEditing?: boolean;
-  pieces: Piece[];
 }
 
 const productSchema = z.object({
@@ -22,20 +24,22 @@ const productSchema = z.object({
   product_pieces: z.array(
     z.object({
       piece_id: z.number(),
-      quantity: z.number().min(1, 'Quantidade deve ser pelo menos 1'),
+      quantity: z.number().min(0, 'Quantidade deve ser pelo menos 1'),
     })
-  ).nonempty('Você deve adicionar pelo menos uma peça ao produto'),
+  ),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
 
-const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing, pieces }: ProductFormProps, ref) => {
+const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing }: ProductFormProps, ref) => {
   const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null);
   const [pieceQuantity, setPieceQuantity] = useState<number>(1);
   const [productPieces, setProductPieces] = useState<PostProductPiece[]>(initialValues?.product_pieces || []);
 
+  const { data: pieces, isLoading: piecesIsLoading, isError: piecesIsError } = useGetPieces();
+
   const form = useForm<ProductFormValues>({
-    // resolver: zodResolver(productSchema), // Use the zod schema to validate the form data
+    resolver: zodResolver(productSchema), // Use the zod schema to validate the form data
     defaultValues: {
       name: initialValues?.name || '',
       product_pieces: initialValues?.product_pieces || [],
@@ -70,16 +74,38 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing, pieces }: 
     });
   };
 
+  const resetNewPieceInputs = () => {
+    setSelectedPiece(null);
+    setPieceQuantity(1);
+  }
+
   const handleAddPiece = () => {
     if (selectedPiece && pieceQuantity > 0) {
-      setProductPieces([...productPieces, { piece_id: selectedPiece.id, quantity: pieceQuantity }]);
-      setSelectedPiece(null);
-      setPieceQuantity(1);
+      const newItemObj: PostProductPiece = { 
+        piece_id: selectedPiece.id, 
+        quantity: pieceQuantity 
+      }
+      setProductPieces([...productPieces, newItemObj]);
+      resetNewPieceInputs()
     }
   };
 
   const handleRemovePiece = (index: number) => {
-    setProductPieces(productPieces.filter((_, i) => i !== index));
+    const updatedPieces = productPieces.filter((_, i) => i !== index);
+    setProductPieces(updatedPieces);
+  };
+
+  // sync product pieces state and form
+  useEffect(() => {
+    form.setValue('product_pieces', productPieces);
+  },[form, productPieces])
+
+  const handleResetAll = () => {
+    reset({
+      name: initialValues?.name || '',
+      product_pieces: initialValues?.product_pieces || [],
+    });
+    setProductPieces(initialValues?.product_pieces || []);
   };
 
   const handleResetField = (field: keyof ProductFormValues) => {
@@ -90,10 +116,7 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing, pieces }: 
     });
   };
 
-  const handleSubmit = (values: ProductFormValues) => {
-    console.log('Submitting form:', values);
-    onSubmit(values);
-  };
+  const piecesLoaded = !piecesIsLoading && !piecesIsError && pieces
 
   return (
     <Form {...form}>
@@ -126,14 +149,21 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing, pieces }: 
         />
 
         <div>
-          <h2 className="text-lg font-semibold md:text-xl px-1">Peças do Produto</h2>
+          <h2 className="text-lg font-semibold md:text-xl">Peças do Produto</h2>
+          {form.formState.errors.product_pieces && (
+            <p className="text-red-500 font-semibold text-xs">{form.formState.errors.product_pieces.message}</p>
+          )}
           <div className="flex items-center gap-4">
             <div className="flex flex-col flex-1">
-              <ComboboxPiece
-                list={pieces}
-                selectedPiece={selectedPiece}
-                setSelectedPiece={setSelectedPiece}
-              />
+              {(piecesIsLoading) && <SkeletonLoader />}
+              {(piecesIsError) && <ErrorState />}
+              {piecesLoaded && (
+                <ComboboxPiece
+                  list={pieces}
+                  selectedPiece={selectedPiece}
+                  setSelectedPiece={setSelectedPiece}
+                />
+              )}
             </div>
             <div className="flex flex-col flex-1">
               <Input
@@ -157,7 +187,7 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing, pieces }: 
 
           <ScrollArea className="h-full mt-4">
             <div className="flex flex-col gap-2">
-              {productPieces.map((item, index) => (
+              {piecesLoaded && productPieces.map((item, index) => (
                 <div key={index} className="flex items-center justify-between p-2 border rounded">
                   <span>{pieces.find(p => p.id === item.piece_id)?.name} - {item.quantity}</span>
                   <Button 
@@ -175,10 +205,10 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing, pieces }: 
         </div>
 
         <div className="flex space-x-2">
-          <Button type="submit" onClick={() => handleSubmit(form.getValues())}>
+          <Button type="submit">
             <Save className="h-4 w-4 mr-2" />{buttonText}
           </Button>
-          <Button disabled={!isEditing} variant="outline" onClick={() => reset()}>
+          <Button disabled={!isEditing} variant="outline" type='button' onClick={handleResetAll}>
             <Undo className="h-4 w-4 mr-2" />Cancelar
           </Button>
         </div>
