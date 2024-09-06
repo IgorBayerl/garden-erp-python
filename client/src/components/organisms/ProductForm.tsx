@@ -109,11 +109,7 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing }: ProductF
   };
 
   const handleResetField = (field: keyof ProductFormValues) => {
-    console.log(field);
-    reset({
-      name: initialValues?.name || '',
-      product_pieces: initialValues?.product_pieces || [],
-    });
+    form.setValue(field, initialValues ? initialValues[field] : '');
   };
 
   const piecesLoaded = !piecesIsLoading && !piecesIsError && pieces
