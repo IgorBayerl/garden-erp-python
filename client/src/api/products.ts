@@ -97,3 +97,31 @@ export const useDeleteProduct = () => {
     },
   });
 };
+
+// Upload a product CSV
+export const useUploadCsvProduct = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (formData: FormData) => {
+      return api.post('/products/upload-csv/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    },
+    onSuccess: () => {
+      // Invalidate the 'products' query to refetch the list of products
+      queryClient.invalidateQueries({
+        queryKey: ['products'],
+        exact: true,
+      });
+      toast.success('CSV importado com sucesso');
+    },
+    onError: (error: AxiosError<APIErrorResponse>) => {
+      // Extract the error message if it exists
+      const errorMessage = error.response?.data?.message || 'Erro ao processar o CSV';
+      toast.error(errorMessage);
+    },
+  });
+};
