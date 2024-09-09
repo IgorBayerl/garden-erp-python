@@ -14,6 +14,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import Image from "@/components/ui/image";
 
 interface ProductListProps {
   products: Product[];
@@ -38,14 +39,20 @@ export default function ProductList({ products, onSelectProduct }: ProductListPr
           )}
         >
           <div>
+            <Image 
+              src={product.image} 
+              alt={product.name} 
+              className="w-16 h-16 rounded-md object-scale-down bg-black bg-opacity-10" 
+            />
             <h2 className="text-lg font-semibold">{product.name}</h2>
             <p>
               Peças:
-              {product.product_pieces.map((productPiece) => (
+              {product.product_pieces.length}
+              {/* {product.product_pieces.map((productPiece) => (
                 <span key={productPiece.piece.id} className="block">
                   {productPiece.piece.name} (Qty: {productPiece.quantity})
                 </span>
-              ))}
+              ))} */}
             </p>
           </div>
           <div className="flex space-x-2">

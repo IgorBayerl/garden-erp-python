@@ -20,15 +20,18 @@ from app.views.pieces import PieceView
 from app.views.products import ProductView, CSVUploadView
 from app.views.orders import calculate_order_by_size, calculate_order_by_product
 from app.views.client import IndexView
+from django.conf.urls.static import static
+from django.conf import settings
 
 urlpatterns = [
+    # Admin
     path('admin/', admin.site.urls),
-    
+
     # Pieces
     path('api/pieces/', PieceView.as_view(), name='pieces_list_create'),  # For GET (list) and POST (create)
     path('api/pieces/<int:id>/', PieceView.as_view(), name='pieces_detail_update_delete'),
 
-    # Products
+    # Products  
     path('api/products/', ProductView.as_view(), name='products_list_create'),  # For GET (list) and POST (create)
     path('api/products/<int:id>/', ProductView.as_view(), name='products_detail_update_delete'),  # For GET (retrieve), PUT (update), and DELETE (delete)
     path('api/products/upload-csv/', CSVUploadView.as_view(), name='csv-upload'),
@@ -36,7 +39,10 @@ urlpatterns = [
     # Orders
     path('api/orders/calculate_order_by_size/', calculate_order_by_size, name='calculate_order_by_size'),
     path('api/orders/calculate_order_by_product/', calculate_order_by_product, name='calculate_order_by_product'),
+    
+    # Serve media files at /media/
+] + static('/media/', document_root=settings.MEDIA_ROOT) + [
 
-    # Client Render
+    # If is not anything else, render the Client (this should be at the bottom)
     re_path(r'^.*$', IndexView.as_view(), name='index'),
 ]

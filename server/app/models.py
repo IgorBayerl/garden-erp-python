@@ -1,4 +1,14 @@
 from django.db import models
+import os
+import uuid
+
+def upload_to(_, filename):
+    # Extract file extension
+    ext = filename.split('.')[-1]
+    # Generate unique filename
+    filename = f'{uuid.uuid4()}.{ext}'
+    # Return the final file path
+    return os.path.join('product_images/', filename)
 
 class Piece(models.Model):
     name = models.CharField(max_length=50, null=False)
@@ -11,6 +21,7 @@ class Piece(models.Model):
 
 class Product(models.Model):
     name = models.CharField(max_length=50, null=False)
+    image = models.ImageField(upload_to=upload_to, null=True, blank=True)
 
     def __str__(self):
         return self.name

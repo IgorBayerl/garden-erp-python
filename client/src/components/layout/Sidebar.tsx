@@ -1,4 +1,4 @@
-import { Puzzle, Package, Factory } from "lucide-react";
+import { Package, Factory } from "lucide-react";
 import GardenLogo from "@/components/ui/garden-logo";
 import SidebarItem from "@/components/layout/SidebarItem";
 import { Separator } from "@/components/ui/separator";
@@ -26,11 +26,11 @@ export default function Sidebar() {
               label="Produtos"
               icon={<Package className="h-4 w-4" />}
             />
-            <SidebarItem 
+            {/* <SidebarItem 
               to="/pieces" 
               label="Peças"
               icon={<Puzzle className="h-4 w-4" />}
-            />
+            /> */}
           </nav>
         </div>
       </div>

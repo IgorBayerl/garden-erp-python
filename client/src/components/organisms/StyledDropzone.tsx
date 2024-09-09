@@ -4,11 +4,12 @@ import { cn } from '@/lib/utils';
 import { FileText } from 'lucide-react'; // CSV icon
 
 interface StyledDropzoneProps {
+  id: string;
   setFiles: (files: File[]) => void;
   selectedFile?: File;
 }
 
-export default function StyledDropzone({ setFiles, selectedFile }: StyledDropzoneProps) {
+export default function StyledDropzone({ id, setFiles, selectedFile }: StyledDropzoneProps) {
   const {
     getRootProps,
     getInputProps,
@@ -38,7 +39,7 @@ export default function StyledDropzone({ setFiles, selectedFile }: StyledDropzon
   return (
     <div className="container">
       <div {...getRootProps({ className: combinedClasses })}>
-        <input {...getInputProps()} />
+        <input {...getInputProps()} id={id} />	
 
         {/* Display the selected file, otherwise show default message */}
         {selectedFile ? (

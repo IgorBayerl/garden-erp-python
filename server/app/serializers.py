@@ -1,5 +1,8 @@
+import base64
 from rest_framework import serializers
 from app.models import Piece, Product, ProductPiece
+from django.core.files.base import ContentFile
+
 
 class PieceSerializer(serializers.ModelSerializer):
     class Meta:
@@ -7,42 +10,60 @@ class PieceSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'sizeX', 'sizeY', 'sizeZ']
 
 class ProductPieceSerializer(serializers.ModelSerializer):
-    piece_id = serializers.PrimaryKeyRelatedField(queryset=Piece.objects.all(), write_only=True, source='piece')
-    piece = PieceSerializer(read_only=True)
+    piece = PieceSerializer()  # Use the PieceSerializer to dynamically create pieces
 
     class Meta:
         model = ProductPiece
-        fields = ['piece_id', 'piece', 'quantity']
+        fields = ['piece', 'quantity']
+
 
 class ProductSerializer(serializers.ModelSerializer):
     product_pieces = ProductPieceSerializer(many=True)
+    image = serializers.CharField(required=False, allow_null=True)  # Image will be sent as Base64 string
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'product_pieces']
+        fields = ['id', 'name', 'image', 'product_pieces']
 
-    def update(self, instance, validated_data):
-        instance.name = validated_data.get('name', instance.name)
-        instance.save()
-
-        # Clear existing product pieces
-        ProductPiece.objects.filter(product=instance).delete()
-
-        # Add the new product pieces
-        product_pieces_data = validated_data.pop('product_pieces')
-        for product_piece_data in product_pieces_data:
-            piece = product_piece_data['piece']  # 'piece' is a Piece instance here
-            ProductPiece.objects.create(product=instance, piece=piece, quantity=product_piece_data['quantity'])
-
-        return instance
-    
     def create(self, validated_data):
         product_pieces_data = validated_data.pop('product_pieces')
+        image_base64 = validated_data.pop('image', None)  # Get the Base64 image
+
+        # Create the product object
         product = Product.objects.create(**validated_data)
 
+        # Convert Base64 image to image file, if exists
+        if image_base64:
+            format, imgstr = image_base64.split(';base64,')
+            ext = format.split('/')[-1]  # Get the file extension
+            product.image.save(f"{product.name}.{ext}", ContentFile(base64.b64decode(imgstr)), save=True)
+
+        # Create related pieces and product-pieces
         for product_piece_data in product_pieces_data:
-            piece = product_piece_data['piece']  # 'piece' is a Piece instance here
+            piece_data = product_piece_data.pop('piece')
+            piece, _ = Piece.objects.get_or_create(**piece_data)
             ProductPiece.objects.create(product=product, piece=piece, quantity=product_piece_data['quantity'])
 
         return product
 
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        image_base64 = validated_data.get('image', None)
+
+        # Handle image update with Base64
+        if image_base64:
+            format, imgstr = image_base64.split(';base64,')
+            ext = format.split('/')[-1]
+            instance.image.save(f"{instance.name}.{ext}", ContentFile(base64.b64decode(imgstr)), save=True)
+
+        instance.save()
+
+        ProductPiece.objects.filter(product=instance).delete()
+
+        product_pieces_data = validated_data.pop('product_pieces')
+        for product_piece_data in product_pieces_data:
+            piece_data = product_piece_data.pop('piece')
+            piece, _ = Piece.objects.get_or_create(**piece_data)
+            ProductPiece.objects.create(product=instance, piece=piece, quantity=product_piece_data['quantity'])
+
+        return instance

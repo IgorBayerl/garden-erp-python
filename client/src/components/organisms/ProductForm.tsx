@@ -1,30 +1,33 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { Piece, PostProduct, PostProductPiece } from '@/api/types';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from 'react';
-import { Undo, Save, Plus, Trash2 } from 'lucide-react';
-import { ComboboxPiece } from '@/components/organisms/ComboboxPiece';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { useGetPieces } from '@/api/pieces';
-import SkeletonLoader from '../layout/SkeletonLoader';
-import ErrorState from '../layout/ErrorState';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Product } from "@/api/types";
+import { useFieldArray, useForm } from "react-hook-form";
+import { z } from "zod";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from "react";
+import { Undo, Save, Plus, Trash } from "lucide-react";
+import { convertToBase64 } from "@/lib/utils";
 
 interface ProductFormProps {
-  onSubmit: (product: Omit<PostProduct, 'id'>) => void;
-  initialValues?: PostProduct;
+  onSubmit: (product: Omit<Product, "id">) => void;
+  initialValues?: Product;
   isEditing?: boolean;
 }
 
 const productSchema = z.object({
-  name: z.string().min(1, 'Nome é obrigatório'),
+  name: z.string().min(1, "Nome é obrigatório"),
+  image: z.instanceof(File).optional(),
   product_pieces: z.array(
     z.object({
-      piece_id: z.number(),
-      quantity: z.number().min(0, 'Quantidade deve ser pelo menos 1'),
+      piece: z.object({
+        id: z.preprocess((val) => Number(val), z.number()),  
+        name: z.string().min(1, "Nome da peça é obrigatório"),
+        sizeX: z.preprocess((val) => Number(val), z.number().positive("Comprimento deve ser positivo")),
+        sizeY: z.preprocess((val) => Number(val), z.number().positive("Largura deve ser positivo")),
+        sizeZ: z.preprocess((val) => Number(val), z.number().positive("Espessura deve ser positivo")),
+      }),
+      quantity: z.preprocess((val) => Number(val), z.number().positive("Quantidade deve ser positiva")),
     })
   ),
 });
@@ -32,28 +35,46 @@ const productSchema = z.object({
 type ProductFormValues = z.infer<typeof productSchema>;
 
 const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing }: ProductFormProps, ref) => {
-  const [selectedPiece, setSelectedPiece] = useState<Piece | null>(null);
-  const [pieceQuantity, setPieceQuantity] = useState<number>(1);
-  const [productPieces, setProductPieces] = useState<PostProductPiece[]>(initialValues?.product_pieces || []);
-
-  const { data: pieces, isLoading: piecesIsLoading, isError: piecesIsError } = useGetPieces();
+  const [pastedImage, setPastedImage] = useState<File | undefined>(undefined);
 
   const defaultValues = useMemo(() => ({
-    name: initialValues?.name || '',
+    name: initialValues?.name || "",
+    image: typeof initialValues?.image === 'string' ? undefined : initialValues?.image,
     product_pieces: initialValues?.product_pieces || [],
-  }), [initialValues]); // changed lines
+  }), [initialValues]);
 
   const form = useForm<ProductFormValues>({
-    resolver: zodResolver(productSchema), // Use the zod schema to validate the form data
+    resolver: zodResolver(productSchema),
     defaultValues: defaultValues,
   });
 
-  const { reset } = form;
+  const { setValue, reset, control } = form
+
+  const handlePaste = (event: React.ClipboardEvent) => {
+    const items = event.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.startsWith('image')) {
+        const imageFile = items[i].getAsFile();
+        if (imageFile) {
+          setPastedImage(imageFile);
+          setValue('image', imageFile);  // Set form value for the image
+        }
+      }
+    }
+  };
 
   const resetValues = useCallback(() => {
     reset(defaultValues);
-    setProductPieces(defaultValues.product_pieces);
+    setPastedImage(defaultValues.image);
   }, [defaultValues, reset]);
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setPastedImage(file);
+      setValue('image', file);  
+    }
+  };
 
   useImperativeHandle(ref, () => ({
     resetForm: () => resetValues(),
@@ -63,147 +84,211 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing }: ProductF
     resetValues()
   }, [initialValues, resetValues]);
 
-  const title = isEditing ? `Editando produto` : 'Adicionar produto';
-  const buttonText = isEditing ? `Atualizar produto` : 'Adicionar produto';
-
-  const onFormSubmit = (values: ProductFormValues) => {
-    onSubmit({
-      name: values.name,
-      product_pieces: productPieces,
-    });
-  };
-
-  const resetNewPieceInputs = () => {
-    setSelectedPiece(null);
-    setPieceQuantity(1);
-  }
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "product_pieces",  
+  });
 
   const handleAddPiece = () => {
-    if (selectedPiece && pieceQuantity > 0) {
-      const newItemObj: PostProductPiece = { 
-        piece_id: selectedPiece.id, 
-        quantity: pieceQuantity 
-      }
-      setProductPieces([...productPieces, newItemObj]);
-      resetNewPieceInputs()
+    append({
+      piece: { id: 0, name: "", sizeX: 0, sizeY: 0, sizeZ: 0 },  
+      quantity: 1,
+    })
+  }
+
+  const title = isEditing ? "Editando produto" : "Adicionando produto";
+  const buttonText = isEditing ? "Salvar produto" : "Adicionar produto";
+
+  const onFormSubmit = async (values: ProductFormValues) => {
+    let base64Image: string | undefined = undefined;
+  
+    if (values.image) {
+      base64Image = await convertToBase64(values.image);
     }
+  
+    const productData: Omit<Product, "id"> = {
+      name: values.name,
+      image: base64Image, 
+      product_pieces: values.product_pieces,
+    };
+  
+    onSubmit(productData);
   };
-
-  const handleRemovePiece = (index: number) => {
-    const updatedPieces = productPieces.filter((_, i) => i !== index);
-    setProductPieces(updatedPieces);
-  };
-
-  // sync product pieces state and form
-  useEffect(() => {
-    form.setValue('product_pieces', productPieces);
-  },[form, productPieces])
-
-  const handleResetAll = () => {
-    resetValues()
-  };
-
-  const handleResetField = (field: keyof ProductFormValues) => {
-    form.setValue(field, initialValues ? initialValues[field] : '');
-  };
-
-  const piecesLoaded = !piecesIsLoading && !piecesIsError && pieces
 
   return (
     <Form {...form}>
-      <div>
-        <h1 className="text-lg font-semibold md:text-xl px-1 pt-6">{title}</h1>
-      </div>
-      <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-8 px-1">
+      <h1 className="text-xl font-semibold px-1">{title}</h1>
+      <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-4 flex flex-col px-1 h-full overflow-hidden">
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nome</FormLabel>
-              <div className="flex items-center space-x-2">
-                <FormControl>
-                  <Input title="Nome" placeholder="Nome" {...field} />
-                </FormControl>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleResetField('name')}
-                  type="button"
-                  tabIndex={-1}
-                >
-                  <Undo className="h-4 w-4" />
-                </Button>
-              </div>
+              <FormLabel className="line-clamp-1">Nome do produto</FormLabel>
+              <FormControl>
+                <Input title="Nome" placeholder="Nome" {...field} />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-
-        <div>
-          <h2 className="text-lg font-semibold md:text-xl">Peças do Produto</h2>
-          {form.formState.errors.product_pieces && (
-            <p className="text-red-500 font-semibold text-xs">{form.formState.errors.product_pieces.message}</p>
-          )}
-          <div className="flex items-center gap-4">
-            <div className="flex flex-col flex-1">
-              {(piecesIsLoading) && <SkeletonLoader />}
-              {(piecesIsError) && <ErrorState />}
-              {piecesLoaded && (
-                <ComboboxPiece
-                  list={pieces}
-                  selectedPiece={selectedPiece}
-                  setSelectedPiece={setSelectedPiece}
+        <FormField
+          control={form.control}
+          name="image"
+          render={() => (
+            <FormItem onPaste={handlePaste}>
+              <FormLabel className="block text-sm font-medium">Imagem (Colar ou carregar)</FormLabel>
+              <div className="border-2 border-dashed rounded-md p-4 h-32 flex items-center justify-center text-center">
+                {pastedImage ? (
+                  <img
+                    src={URL.createObjectURL(pastedImage)}
+                    alt="Uploaded or Pasted"
+                    className="max-h-full"
+                  />
+                ) : (
+                  <p>
+                    Cole uma imagem aqui ou{" "}
+                    <button
+                      type="button"
+                      onClick={() => document.getElementById("image-upload")?.click()}
+                      className="text-blue-500 underline text-sm"
+                    >
+                      selecione do seu computador
+                    </button>
+                  </p>
+                )}
+                <input
+                  id="image-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
                 />
-              )}
-            </div>
-            <div className="flex flex-col flex-1">
-              <Input
-                id="piece-quantity"
-                type="number"
-                value={pieceQuantity}
-                min={1}
-                onChange={(e) => setPieceQuantity(Number(e.target.value))}
-                placeholder="Quantidade"
-              />
-            </div>
-            <Button 
-              type="button"
-              onClick={handleAddPiece}
-              className="self-end" 
-              title="Adicionar Peça"
-            >
-              <Plus className="h-4 w-4 mr-2" />Adicionar
-            </Button>
-          </div>
+              </div>
+            </FormItem>
+          )}
+        />
 
-          <ScrollArea className="h-full mt-4">
-            <div className="flex flex-col gap-2">
-              {piecesLoaded && productPieces.map((item, index) => (
-                <div key={index} className="flex items-center justify-between p-2 border rounded">
-                  <span>{pieces.find(p => p.id === item.piece_id)?.name} - {item.quantity}</span>
-                  <Button 
+        <div className="overflow-hidden flex-grow flex flex-col justify-between gap-2">
+          <div className="overflow-hidden flex flex-col ">
+            <div className="grid grid-cols-12 gap-4 border-b pb-2 px-1">
+              <span className="font-semibold col-span-4">Nome da Peça</span> {/* Larger width for this column */}
+              <span className="font-semibold col-span-1">Qtd.</span>
+              <span className="font-semibold col-span-2">Comp.</span>
+              <span className="font-semibold col-span-2">Larg.</span>
+              <span className="font-semibold col-span-2">Esp.</span>
+              <span className="font-semibold text-right mr-3 col-span-1">Ações</span> {/* Smaller width for actions */}
+            </div>
+            <div className="h-full overflow-y-auto min-h-0 px-1">
+              {fields.map((field, index) => (
+                <div
+                  key={field.id}
+                  className="grid grid-cols-12 gap-4 items-center py-2 border-b"
+                >
+                  {/* Column for 'Nome da Peça' */}
+                  <FormField
+                    control={form.control}
+                    name={`product_pieces.${index}.piece.name`}
+                    render={({ field }) => (
+                      <FormItem className="col-span-4"> {/* Adjusted width */}
+                        <FormControl>
+                          <Input {...field} placeholder="Nome da Peça" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Column for 'Quantidade' */}
+                  <FormField
+                    control={form.control}
+                    name={`product_pieces.${index}.quantity`}
+                    render={({ field }) => (
+                      <FormItem className="col-span-1"> {/* Adjusted width */}
+                        <FormControl>
+                          <Input type="number" {...field} placeholder="Quantidade" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Column for 'Comprimento' */}
+                  <FormField
+                    control={form.control}
+                    name={`product_pieces.${index}.piece.sizeX`}
+                    render={({ field }) => (
+                      <FormItem className="col-span-2"> {/* Adjusted width */}
+                        <FormControl>
+                          <Input type="number" {...field} placeholder="Comprimento" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Column for 'Largura' */}
+                  <FormField
+                    control={form.control}
+                    name={`product_pieces.${index}.piece.sizeY`}
+                    render={({ field }) => (
+                      <FormItem className="col-span-2"> {/* Adjusted width */}
+                        <FormControl>
+                          <Input type="number" {...field} placeholder="Largura" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Column for 'Espessura' */}
+                  <FormField
+                    control={form.control}
+                    name={`product_pieces.${index}.piece.sizeZ`}
+                    render={({ field }) => (
+                      <FormItem className="col-span-2"> {/* Adjusted width */}
+                        <FormControl>
+                          <Input type="number" {...field} placeholder="Espessura" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Column for 'Ações' */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     type="button"
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => handleRemovePiece(index)}
+                    onClick={() => remove(index)}  // Remove the piece from the list
+                    className="text-red-500 col-span-1"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash className="h-4 w-4" />
                   </Button>
                 </div>
               ))}
             </div>
-          </ScrollArea>
+          </div>
+          <div className="flex space-x-2 justify-between">
+            <div className="space-x-2">
+              <Button type="submit">
+                <Save className="h-4 w-4 mr-2" />{buttonText}
+              </Button>
+              <Button disabled={!isEditing} variant="outline" onClick={resetValues} type="button">
+                <Undo className="h-4 w-4 mr-2" />Cancelar
+              </Button>
+            </div>
+            <div>
+              <Button
+                type="button"
+                onClick={handleAddPiece}
+              >
+                <Plus className="h-4 w-4 mr-2" />Adicionar Peça
+              </Button>
+            </div>
+          </div>
         </div>
 
-        <div className="flex space-x-2">
-          <Button type="submit">
-            <Save className="h-4 w-4 mr-2" />{buttonText}
-          </Button>
-          <Button disabled={!isEditing} variant="outline" type='button' onClick={handleResetAll}>
-            <Undo className="h-4 w-4 mr-2" />Cancelar
-          </Button>
-        </div>
       </form>
     </Form>
   );

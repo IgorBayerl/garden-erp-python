@@ -7,14 +7,14 @@ from django.db import transaction
 import pandas as pd
 from rest_framework.parsers import MultiPartParser
 
-def register_product_with_pieces(product_name, pieces_data):
+def register_product_with_pieces(product_name, pieces_data, image_file=None):
     """
     Abstract function to register a product and related pieces in a single transaction.
     - product_name: name of the product.
     - pieces_data: list of dicts with piece information (name, sizeX, sizeY, sizeZ, quantity).
     """
     with transaction.atomic():
-        product = Product.objects.create(name=product_name) 
+        product = Product.objects.create(name=product_name, image=image_file)
 
         for piece_data in pieces_data:
             # Create or retrieve the piece
@@ -80,11 +80,12 @@ class ProductView(APIView):
         return Response({'message': 'Product and related pieces deleted successfully'})
 
 class CSVUploadView(APIView):
-    parser_classes = [MultiPartParser]  # Only handle multipart file uploads
+    parser_classes = [MultiPartParser]  # Handle multipart form-data for file and image uploads
 
     def post(self, request):
         # Get the product name from the request data
         product_name = request.data.get('product_name')
+        image_file = request.FILES.get('image')  # Get the optional image
 
         if not product_name:
             return Response({"error": "Product name is required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -116,7 +117,7 @@ class CSVUploadView(APIView):
                 pieces_data.append(piece_data)
 
             # Register the product and pieces via the abstract function
-            product = register_product_with_pieces(product_name, pieces_data)
+            product = register_product_with_pieces(product_name, pieces_data, image_file)
 
             return Response({'message': 'CSV processed successfully', 'product_id': product.id}, status=status.HTTP_201_CREATED)
 
