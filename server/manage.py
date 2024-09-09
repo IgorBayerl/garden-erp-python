@@ -5,10 +5,13 @@ import sys
 import threading
 import webbrowser
 from django.conf import settings
-from django.core.management import execute_from_command_line, call_command
+from django.core.management import call_command
 from django.db import connections, OperationalError
 from django.db.migrations.executor import MigrationExecutor
 from django.core.exceptions import ImproperlyConfigured
+import pystray
+from pystray import MenuItem as item
+from PIL import Image, ImageDraw
 
 def show_ascii_art():
     """Display ASCII art on the terminal."""
@@ -62,6 +65,26 @@ def handle_open_browser():
     if os.environ.get('RUN_MAIN') != 'true':
         threading.Thread(target=open_browser).start()
 
+# Tray icon setup
+def create_image():
+    """Create an icon image for the system tray."""
+    image = Image.new('RGB', (64, 64), color=(73, 109, 137))
+    draw = ImageDraw.Draw(image)
+    draw.rectangle((16, 16, 48, 48), fill='black')
+    return image
+
+def on_quit(icon, item):
+    """Quit the system tray icon and Django server."""
+    icon.stop()
+    sys.exit()
+
+def setup_tray():
+    """Set up the system tray icon."""
+    icon = pystray.Icon("django_server", create_image(), "Garden ERP Server", menu=pystray.Menu(
+        item('Quit', on_quit)
+    ))
+    icon.run()
+
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project.settings')
@@ -85,11 +108,14 @@ def main():
     if len(sys.argv) == 1:
         sys.argv.extend(['runserver', '--noreload'])
 
-    # Check if the command is 'runserver' and only then open the browser
+    # Check if the command is 'runserver' and only then open the browser and system tray
     if 'runserver' in sys.argv and getattr(sys, 'frozen', False):
         # Start a new thread to open the browser
         handle_open_browser()
         show_ascii_art()
+
+        # Start the system tray icon in a separate thread to keep the server running
+        threading.Thread(target=setup_tray, daemon=True).start()
 
     execute_from_command_line(sys.argv)
 
