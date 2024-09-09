@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from './api';
-import { APIErrorResponse, PostProduct, Product } from './types';
+import { APIErrorResponse, Product } from './types';
 import { toast } from 'sonner';
 import { AxiosError } from 'axios';
 
@@ -26,16 +26,19 @@ export const useGetProductById = (id: number) => {
   });
 };
 
-// Create a new product
+
+
+
+
+// Create a new product (multipart form data)
 export const useCreateProduct = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (newProduct: Omit<PostProduct, 'id'>) => {
-      return api.post('/products/', newProduct);
+    mutationFn: async (newProduct: Omit<Product, 'id'>) => {
+      return api.post('/products/', newProduct);  // Now `newProduct.image` is a Base64 string
     },
     onSuccess: () => {
-      // Invalidate the 'products' query to refetch the list of products
       queryClient.invalidateQueries({
         queryKey: ['products'],
         exact: true,
@@ -43,23 +46,21 @@ export const useCreateProduct = () => {
       toast.success('Produto adicionado com sucesso');
     },
     onError: (error: AxiosError<APIErrorResponse>) => {
-      // Extract the error message if it exists
       const errorMessage = error.response?.data?.message || 'Erro ao adicionar produto';
       toast.error(errorMessage);
     },
   });
 };
 
-// Update an existing product
+// Update an existing product (multipart form data)
 export const useUpdateProduct = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (updatedProduct: PostProduct) => {
+    mutationFn: async (updatedProduct: Product) => {
       return api.put(`/products/${updatedProduct.id}/`, updatedProduct);
     },
     onSuccess: () => {
-      // Invalidate the 'products' query to refetch the list of products
       queryClient.invalidateQueries({
         queryKey: ['products'],
         exact: true,
@@ -67,12 +68,12 @@ export const useUpdateProduct = () => {
       toast.success('Produto atualizado com sucesso');
     },
     onError: (error: AxiosError<APIErrorResponse>) => {
-      // Extract the error message if it exists
       const errorMessage = error.response?.data?.message || 'Erro ao atualizar produto';
       toast.error(errorMessage);
     },
   });
 };
+
 
 // Delete a product
 export const useDeleteProduct = () => {
@@ -111,7 +112,6 @@ export const useUploadCsvProduct = () => {
       });
     },
     onSuccess: () => {
-      // Invalidate the 'products' query to refetch the list of products
       queryClient.invalidateQueries({
         queryKey: ['products'],
         exact: true,
@@ -119,9 +119,9 @@ export const useUploadCsvProduct = () => {
       toast.success('Produto importado com sucesso');
     },
     onError: (error: AxiosError<APIErrorResponse>) => {
-      // Extract the error message if it exists
       const errorMessage = error.response?.data?.message || 'Erro ao processar o CSV';
       toast.error(errorMessage);
     },
   });
 };
+

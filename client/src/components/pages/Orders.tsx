@@ -12,7 +12,7 @@ import ErrorState from "@/components/layout/ErrorState";
 import SkeletonLoader from "@/components/layout/SkeletonLoader";
 import OrderBySizeTable from "@/components/organisms/OrderBySizeTable";
 import { Printer, Trash, Ellipsis, Save } from "lucide-react";
-import { useLocalStorage } from 'usehooks-ts'
+import { useSessionStorage } from 'usehooks-ts'
 import { useReactToPrint } from "react-to-print";
 import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -21,9 +21,9 @@ type OrderItem = { product: Product; quantity: number };
 
 export default function OrdersPage() {
   const { data: products, isLoading, isError } = useGetProducts();
-  const [selectedProduct, setSelectedProduct] = useLocalStorage<Product | null>('order-product',null);
-  const [quantity, setQuantity] = useLocalStorage<number>('order-quantity', 1);
-  const [order, setOrder] = useLocalStorage<OrderItem[]>('order', []);
+  const [selectedProduct, setSelectedProduct] = useSessionStorage<Product | null>('order-product',null);
+  const [quantity, setQuantity] = useSessionStorage<number>('order-quantity', 1);
+  const [order, setOrder] = useSessionStorage<OrderItem[]>('order', []);
   const { mutate: calculateOrder, data: orderResponse, isPending: isCalculating, isError: isCalculationError } = useCalculateOrderBySize();
 
   const tableRef = useRef<HTMLDivElement>(null);
@@ -108,11 +108,11 @@ export default function OrdersPage() {
       <div className="flex flex-col flex-grow gap-4 rounded-lg border border-dashed shadow-sm overflow-hidden">
         <ResizablePanelGroup direction="horizontal" className="flex-grow">
           <ResizablePanel minSize={32} defaultSize={32} className="flex flex-col overflow-hidden">
-            <div className="flex flex-col gap-4 m-4 h-full">
+            <div className="flex flex-col gap-4 mx-4 overflow-hidden">
               {isLoading && <SkeletonLoader />}
               {isError && <ErrorState />}
               {!isLoading && !isError && products && (
-                <>
+                <div className="flex flex-col overflow-hidden gap-4">
                   <div className="flex items-center gap-4">
                     <div className="flex flex-col flex-1">
                       <Label htmlFor="product">Produto</Label>
@@ -136,14 +136,14 @@ export default function OrdersPage() {
                       Adicionar
                     </Button>
                   </div>
-                  <ScrollArea className="h-full">
-                    <div className="flex flex-col pb-10 gap-2">
+                  <ScrollArea className="flex flex-col">
+                    <div className="flex flex-col gap-2">
                       {order.map((item, index) => (
                         <OrderItem key={index} index={index} item={item} remove={removeProductFromOrder} />
                       ))}
                     </div>
                   </ScrollArea>
-                </>
+                </div>
               )}
             </div>
           </ResizablePanel>
@@ -156,11 +156,10 @@ export default function OrdersPage() {
               <ScrollArea className="h-full">
                 {isCalculating && <p>Calculando...</p>}
                 {isCalculationError && <p>Erro ao calcular a ordem</p>}
-                <div ref={tableRef}>
+                <div className="pb-24 print:pb-0" ref={tableRef}>
                   {orderResponse && <OrderBySizeTable data={orderResponse} />}
                 </div>
               </ScrollArea>
-              
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>

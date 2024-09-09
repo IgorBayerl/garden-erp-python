@@ -5,23 +5,26 @@ import SkeletonLoader from "@/components/layout/SkeletonLoader";
 import ProductList from "@/components/organisms/ProductList";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
-import ProductForm from "@/components/organisms/ProductForm";
 import { useRef, useState } from "react";
-import { PostProduct, Product } from "@/api/types";
+import { Product } from "@/api/types";
 import { Plus } from "lucide-react";
-import { convertToPostProduct } from "@/lib/utils"; // Import the utility function
 import ProductAddCsv from "../organisms/ProductAddCsv";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { useSessionStorage } from "usehooks-ts";
+import ProductForm from "@/components/organisms/ProductForm";
 
 export default function ProductsPage() {
   const { data: products, isLoading: productsLoading, isError: productsError } = useGetProducts();
 
   const createProductMutation = useCreateProduct();
   const updateProductMutation = useUpdateProduct();
-  const [selectedProduct, setSelectedProduct] = useState<PostProduct | null>(null); // Use PostProduct including id for updates
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // Use Product including id for updates
   const formRef = useRef<{ resetForm: () => void }>(null);
+  const [selectedTab, setSelectedTab] = useSessionStorage<string>('add_product_tab','import');
 
-  const handleCreateProduct = (newProduct: Omit<PostProduct, 'id'>) => {
+
+  const handleCreateProduct = (newProduct: Omit<Product, 'id'>) => {
+    console.log('Handle create product');
     createProductMutation.mutate(newProduct, {
       onSuccess: () => {
         formRef.current?.resetForm();
@@ -30,7 +33,8 @@ export default function ProductsPage() {
     });
   };
 
-  const handleUpdateProduct = (updatedProduct: Omit<PostProduct, 'id'>) => {
+  const handleUpdateProduct = (updatedProduct: Omit<Product, 'id'>) => {
+    console.log('Handle UPDATE product');
     const requestData = {
       id: selectedProduct?.id || 0,
       ...updatedProduct,
@@ -44,8 +48,8 @@ export default function ProductsPage() {
   };
 
   const handleSelectProduct = (product: Product) => {
-    const postProduct = convertToPostProduct(product);
-    setSelectedProduct({ ...postProduct, id: product.id }); // Include the id for updates
+    setSelectedProduct({ ...product, id: product.id }); // Include the id for updates
+    setSelectedTab('form');
   };
 
   const handleNewItem = () => {
@@ -71,8 +75,8 @@ export default function ProductsPage() {
       {(isErrorState) && <ErrorState />}
 
       {!productsLoading && !productsError && products && (
-        <div className="flex flex-1 overflow-hidden">
-          <ResizablePanelGroup direction="horizontal" className="flex-grow">
+        <div className="flex flex-col flex-1 overflow-hidden">
+          <ResizablePanelGroup direction="horizontal">
             <ResizablePanel minSize={32} className="flex flex-col overflow-hidden">
               <div className="flex flex-1 flex-col rounded-lg border border-dashed shadow-sm overflow-hidden">
                 <ScrollArea className="h-full">
@@ -82,31 +86,30 @@ export default function ProductsPage() {
             </ResizablePanel>
             <ResizableHandle withHandle className="m-4" />
             <ResizablePanel
-              minSize={32}
-              defaultSize={32}
+              minSize={49}
+              defaultSize={60}
               className="flex flex-col overflow-hidden"
               autoSave="products_view"
             >
-              <Tabs defaultValue="import" className="h-full">
-                <TabsList>
+              <Tabs defaultValue="import" className="flex flex-col min-h-0" onValueChange={setSelectedTab} value={selectedTab}>
+                  
+                <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger disabled={false} value="form">Formulario</TabsTrigger>
                   <TabsTrigger disabled={false} value="import">Importar CSV</TabsTrigger>
                 </TabsList>
-                <TabsContent value="import">
-                  <ProductAddCsv />
-                </TabsContent>
-                <TabsContent value="form" className="h-full overflow-hidden">
-                  <ScrollArea className="h-full">
-                    <div className="pb-14">
-                      <ProductForm
-                        ref={formRef}
-                        onSubmit={selectedProduct ? handleUpdateProduct : handleCreateProduct}
-                        initialValues={selectedProduct || undefined}
-                        isEditing={!!selectedProduct}
-                      />
-                    </div>
-                  </ScrollArea>
-                </TabsContent>
+                <div className="flex flex-col overflow-hidden">
+                  <TabsContent value="import">
+                    <ProductAddCsv />
+                  </TabsContent>
+                  <TabsContent value="form" className="flex flex-col overflow-hidden">
+                    <ProductForm
+                      ref={formRef}
+                      onSubmit={selectedProduct ? handleUpdateProduct : handleCreateProduct}
+                      initialValues={selectedProduct || undefined}
+                      isEditing={!!selectedProduct}
+                    />
+                  </TabsContent>
+                </div>
               </Tabs>
             </ResizablePanel>
           </ResizablePanelGroup>
