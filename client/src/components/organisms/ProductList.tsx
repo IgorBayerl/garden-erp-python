@@ -47,11 +47,12 @@ export default function ProductList({ products, onSelectProduct }: ProductListPr
             <h2 className="text-lg font-semibold">{product.name}</h2>
             <p>
               Peças:
-              {product.product_pieces.map((productPiece) => (
+              {product.product_pieces.length}
+              {/* {product.product_pieces.map((productPiece) => (
                 <span key={productPiece.piece.id} className="block">
                   {productPiece.piece.name} (Qty: {productPiece.quantity})
                 </span>
-              ))}
+              ))} */}
             </p>
           </div>
           <div className="flex space-x-2">
