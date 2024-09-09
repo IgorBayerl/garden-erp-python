@@ -16,6 +16,7 @@ import { useSessionStorage } from 'usehooks-ts'
 import { useReactToPrint } from "react-to-print";
 import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import Image from "../ui/image";
 
 type OrderItem = { product: Product; quantity: number };
 
@@ -181,7 +182,11 @@ export function OrderItem({ item, index, remove }: OrderItemProps) {
       <Card className="flex flex-col items-start justify-between gap-2 w-full p-2 shadow-sm">
         <div className="flex justify-between w-full">
           <div className="flex gap-2">
-            <img src="/cadeira.png" alt="Piece" className="h-16 w-16 rounded-lg object-scale-down bg-secondary aspect-square" />
+            <Image
+              src={item.product.image}
+              alt={item.product.name}
+              className="h-16 w-16 rounded-lg object-scale-down bg-secondary aspect-square"
+            />
             <div>
               <h1 className="text-lg font-semibold">{item.product.name}</h1>
               <div className="text-sm text-muted-foreground">{item.quantity}</div>
