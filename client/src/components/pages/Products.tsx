@@ -2,8 +2,6 @@ import { useCreateProduct, useGetProducts, useUpdateProduct } from "@/api/produc
 import { Button } from "@/components/ui/button";
 import ErrorState from "@/components/layout/ErrorState";
 import SkeletonLoader from "@/components/layout/SkeletonLoader";
-import ProductList from "@/components/organisms/ProductList";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { useRef, useState } from "react";
 import { Product } from "@/api/types";
@@ -12,6 +10,7 @@ import ProductAddCsv from "../organisms/ProductAddCsv";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { useSessionStorage } from "usehooks-ts";
 import ProductForm from "@/components/organisms/ProductForm";
+import ProductTable from "../organisms/ProductsTable";
 
 export default function ProductsPage() {
   const { data: products, isLoading: productsLoading, isError: productsError } = useGetProducts();
@@ -77,22 +76,17 @@ export default function ProductsPage() {
       {!productsLoading && !productsError && products && (
         <div className="flex flex-col flex-1 overflow-hidden">
           <ResizablePanelGroup direction="horizontal">
-            <ResizablePanel minSize={32} className="flex flex-col overflow-hidden">
-              <div className="flex flex-1 flex-col rounded-lg border border-dashed shadow-sm overflow-hidden">
-                <ScrollArea className="h-full">
-                  <ProductList products={products} onSelectProduct={handleSelectProduct} />
-                </ScrollArea>
-              </div>
+            <ResizablePanel minSize={32} className="flex flex-col">
+              <ProductTable products={products} onSelectProduct={handleSelectProduct} />
             </ResizablePanel>
             <ResizableHandle withHandle className="m-4" />
             <ResizablePanel
               minSize={49}
               defaultSize={60}
-              className="flex flex-col overflow-hidden"
+              className="flex flex-col"
               autoSave="products_view"
             >
-              <Tabs defaultValue="import" className="flex flex-col min-h-0" onValueChange={setSelectedTab} value={selectedTab}>
-                  
+              <Tabs defaultValue="import" className="flex flex-col min-h-0 p-1" onValueChange={setSelectedTab} value={selectedTab}>
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger disabled={false} value="form">Formulario</TabsTrigger>
                   <TabsTrigger disabled={false} value="import">Importar CSV</TabsTrigger>

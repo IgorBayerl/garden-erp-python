@@ -1,15 +1,28 @@
-import { BASE_SERVER_URL } from "@/api/api";
+import { BASE_SERVER_URL } from "@/api/api"
+import { useState } from "react"
+import { ImageOff } from 'lucide-react'
+import { cn } from "@/lib/utils"
 
 interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
-  src?: string;
-  alt?: string;
+  src?: string
+  alt?: string
 }
 
-const fallbackImage = 'https://img-cdn.pixlr.com/image-generator/history/65bb506dcb310754719cf81f/ede935de-1138-4f66-8ed7-44bd16efc709/medium.webp'
-
 const Image = ({ src, alt, ...props }: ImageProps) => {
-  const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    e.currentTarget.src = fallbackImage
+  const [hasError, setHasError] = useState(false)
+
+  const handleError = () => {
+    setHasError(true) 
+  }
+
+  const imageClass = cn(
+    "object-cover",
+    "bg-black bg-opacity-10 rounded-md",
+    props.className
+  )
+
+  if (hasError) {
+    return <ImageOff className={imageClass} opacity={0.3} />
   }
 
   const completeSrc = `${BASE_SERVER_URL}/media/${src}`
@@ -21,6 +34,7 @@ const Image = ({ src, alt, ...props }: ImageProps) => {
       alt={alt}
       {...props}
       onError={handleError}
+      className={imageClass}
     />
   )
 }

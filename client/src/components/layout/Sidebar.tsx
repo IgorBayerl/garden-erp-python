@@ -27,8 +27,8 @@ export default function Sidebar() {
               icon={<Package className="h-4 w-4" />}
             />
             {/* <SidebarItem 
-              to="/pieces" 
-              label="Peças"
+              to="/test" 
+              label="Test"
               icon={<Puzzle className="h-4 w-4" />}
             /> */}
           </nav>
