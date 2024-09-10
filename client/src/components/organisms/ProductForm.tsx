@@ -258,7 +258,7 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing }: ProductF
                   {/* Column for 'Ações' */}
                   <Button
                     variant="ghost"
-                    size="sm"
+                    size="icon"
                     type="button"
                     onClick={() => remove(index)}  // Remove the piece from the list
                     className="text-red-500 col-span-1"

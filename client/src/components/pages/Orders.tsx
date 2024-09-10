@@ -185,7 +185,7 @@ export function OrderItem({ item, index, remove }: OrderItemProps) {
             <Image
               src={item.product.image}
               alt={item.product.name}
-              className="h-16 w-16 rounded-lg object-scale-down bg-secondary aspect-square"
+              className="h-16 w-16 rounded-lg object-cover bg-secondary aspect-square"
             />
             <div>
               <h1 className="text-lg font-semibold">{item.product.name}</h1>
