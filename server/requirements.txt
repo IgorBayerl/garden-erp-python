@@ -4,3 +4,4 @@ django-cors-headers==4.4.0
 pandas==2.2.2
 pystray==0.19.5
 pillow==10.4.0
+chardet==5.2.0

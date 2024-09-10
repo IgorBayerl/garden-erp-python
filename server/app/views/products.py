@@ -1,3 +1,5 @@
+from io import StringIO
+import chardet
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -6,6 +8,8 @@ from app.models import Product, Piece, ProductPiece
 from django.db import transaction
 import pandas as pd
 from rest_framework.parsers import MultiPartParser
+
+from app.utils.csv_utisl import convert_to_utf8, detect_encoding, validate_columns
 
 def register_product_with_pieces(product_name, pieces_data, image_file=None):
     """
@@ -51,11 +55,12 @@ class ProductView(APIView):
                 return Response({'message': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
             serializer = ProductSerializer(product)
         else:
-            # Prefetch related ProductPiece and Piece objects to optimize queries
-            products = Product.objects.all().prefetch_related('product_pieces__piece')
+            # Prefetch related ProductPiece and Piece objects and order by '-id' to show latest products first
+            products = Product.objects.all().prefetch_related('product_pieces__piece').order_by('-id')
             serializer = ProductSerializer(products, many=True)
-        
+
         return Response(serializer.data)
+
 
     def put(self, request, id):
         try:
@@ -96,13 +101,19 @@ class CSVUploadView(APIView):
             return Response({"error": "Invalid file type"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Parse the CSV file using pandas
-            df = pd.read_csv(file_obj, delimiter=',', encoding='utf-8')
+            # Detect the file encoding
+            encoding = detect_encoding(file_obj)
+            print(f"Detected encoding: {encoding}")
+
+            # Convert the file content to UTF-8
+            utf8_file_obj = convert_to_utf8(file_obj, encoding)
+
+            # Read the CSV file using pandas from the UTF-8 content
+            df = pd.read_csv(utf8_file_obj, delimiter=',')
 
             # Validate the necessary columns
             required_columns = ['Peça', 'Comp.', 'Larg.', 'Esp.', 'Qtd.']
-            if not all(col in df.columns for col in required_columns):
-                return Response({"error": "Missing required columns in CSV"}, status=status.HTTP_400_BAD_REQUEST)
+            validate_columns(df, required_columns)
 
             # Prepare pieces data from CSV
             pieces_data = []
@@ -121,5 +132,9 @@ class CSVUploadView(APIView):
 
             return Response({'message': 'CSV processed successfully', 'product_id': product.id}, status=status.HTTP_201_CREATED)
 
+        except ValueError as ve:
+            return Response({"error": str(ve)}, status=status.HTTP_400_BAD_REQUEST)
+        except UnicodeDecodeError:
+            return Response({"error": "Failed to decode the file. Please ensure it is encoded correctly."}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
