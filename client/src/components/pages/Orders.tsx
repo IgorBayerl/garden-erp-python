@@ -40,20 +40,22 @@ export default function OrdersPage() {
   const handlePrint = useReactToPrint({
     content: () => tableRef.current,
     documentTitle: "OrderBySizeTable",
-    onBeforeGetContent: () => {
-      // Inject custom styles for printing
-      const styleElement = document.createElement("style");
-      styleElement.innerHTML = `
-        @media print {
-          body {
-            margin: 0 -90px; /* Adjust margin as needed */
-            scale: 75%; /* Scale down font size */
-          }
-        }
-      `;
-      document.head.appendChild(styleElement);
+    // onBeforeGetContent: () => {
+    //   // Inject custom styles for printing
+    //   const styleElement = document.createElement("style");
+    //   styleElement.innerHTML = `
+    //     @media print {
+    //       body {
+    //         margin: 0 -90px; /* Adjust margin as needed */
+    //         scale: 75%; /* Scale down font size */
+    //       }
+    //     }
+    //   `;
+    //   document.head.appendChild(styleElement);
+    // },
+    onAfterPrint: () => {
+      //TODO: Save the printed order
     },
-    onAfterPrint: () => {},
   });
 
   const handleClearOrder = () => {

@@ -88,13 +88,10 @@ def calculate_order_by_size(request):
                 pieces_by_size_group[group_key]['item_count'] += 1
 
         # Build requested_products details
-        total_product_quantity = sum(
-            product_piece.quantity * quantity for product_piece in product.product_pieces.all()
-        )
         requested_products.append({
             'product': product.name,
             'image': product.image.url if product.image else None,
-            'total_quantity': total_product_quantity,
+            'total_quantity': quantity, # Value from the request, no calculations needed
             'pieces': total_pieces
         })
 

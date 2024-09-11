@@ -25,7 +25,7 @@ const Image = ({ src, alt, ...props }: ImageProps) => {
     return <ImageOff className={imageClass} opacity={0.3} />
   }
 
-  const completeSrc = `${BASE_SERVER_URL}/media/${src}`
+  const completeSrc = `${BASE_SERVER_URL}/${src}`
   const encodedSrc = encodeURI(completeSrc)
 
   return (
