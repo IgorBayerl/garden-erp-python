@@ -288,6 +288,7 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing }: ProductF
               <CsvUploadParse setPieces={setPiecesValue} />
               <Button
                 type="button"
+                variant="outline" 
                 onClick={handleAddPiece}
               >
                 <Plus className="h-4 w-4 mr-2" />Adicionar Peça

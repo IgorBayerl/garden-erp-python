@@ -76,7 +76,7 @@ export default function ProductsPage() {
             <ResizableHandle withHandle className="m-4" />
             <ResizablePanel
               minSize={49}
-              defaultSize={60}
+              defaultSize={52}
               className="flex flex-col"
               autoSave="products_view"
             >
@@ -86,25 +86,6 @@ export default function ProductsPage() {
                 initialValues={selectedProduct || undefined}
                 isEditing={!!selectedProduct}
               />
-              {/* <Tabs defaultValue="import" className="flex flex-col min-h-0 p-1 h-full" onValueChange={setSelectedTab} value={selectedTab}>
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger disabled={false} value="form">Formulario</TabsTrigger>
-                  <TabsTrigger disabled={false} value="import">Importar CSV</TabsTrigger>
-                </TabsList>
-                <div className="flex flex-col overflow-hidden h-full">
-                  <TabsContent value="import">
-                    <ProductAddCsv />
-                  </TabsContent>
-                  <TabsContent value="form" className="flex flex-col overflow-hidden h-full">
-                    <ProductForm
-                      ref={formRef}
-                      onSubmit={selectedProduct ? handleUpdateProduct : handleCreateProduct}
-                      initialValues={selectedProduct || undefined}
-                      isEditing={!!selectedProduct}
-                    />
-                  </TabsContent>
-                </div>
-              </Tabs> */}
             </ResizablePanel>
           </ResizablePanelGroup>
         </div>

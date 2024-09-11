@@ -54,7 +54,7 @@ const CsvUploadParse: React.FC<CsvUploadParseProps> = ({ setPieces }) => {
         ref={fileInputRef}
         className='hidden'
       />
-      <Button type="button" onClick={handleClick}>
+      <Button type="button" variant="outline" onClick={handleClick}>
         <FileSpreadsheet className="h-4 w-4 mr-2" /> Importar
       </Button>
     </div>
