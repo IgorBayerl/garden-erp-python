@@ -7,7 +7,7 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from "react";
 import { Undo, Save, Plus, Trash } from "lucide-react";
-import { convertToBase64 } from "@/lib/utils";
+import { convertToBase64, customZodResolver } from "@/lib/utils";
 import CsvUploadParse from "./CsvUploadParse";
 
 interface ProductFormProps {
@@ -22,7 +22,7 @@ const productSchema = z.object({
   product_pieces: z.array(
     z.object({
       piece: z.object({
-        id: z.preprocess((val) => Number(val), z.number()),  
+        id: z.preprocess((val) => Number(val) || 0, z.number()),
         name: z.string().min(1, "Nome da peça é obrigatório"),
         sizeX: z.preprocess((val) => Number(val), z.number().positive("Comprimento deve ser positivo")),
         sizeY: z.preprocess((val) => Number(val), z.number().positive("Largura deve ser positivo")),
@@ -45,7 +45,7 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing }: ProductF
   }), [initialValues]);
 
   const form = useForm<ProductFormValues>({
-    resolver: zodResolver(productSchema),
+    resolver: customZodResolver(productSchema),
     defaultValues: defaultValues,
   });
 

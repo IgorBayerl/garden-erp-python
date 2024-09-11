@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from './api';
-import { APIErrorResponse, DeletePieceErrorResponse, Piece, ProductPiece } from './types';
+import api from '@/api/api';
+import { APIErrorResponse, DeletePieceErrorResponse, Piece, ProductPiece } from '@/api/types';
 import { toast } from 'sonner';
 import { AxiosError } from 'axios';
 

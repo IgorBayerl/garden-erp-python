@@ -68,7 +68,6 @@ export default function OrdersPage() {
     const orderRequest: CalculateOrderRequest = {
       order: "desc", // or 'asc', depending on your needs
       plank_size: 3000,
-      sort_by: ["z", "y", "x"],
       products: order.map((item) => ({
         product_id: item.product.id,
         quantity: item.quantity,

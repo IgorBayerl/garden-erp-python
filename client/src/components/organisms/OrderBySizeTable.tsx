@@ -1,15 +1,15 @@
 import React from 'react';
-import { OrderResponseItem } from '@/api/orders';
+import { type CalculateOrderResponse } from '@/api/orders';
 
-// TODO: add print: from tailwind to change some styles to print
-// Darker the background color
-// Darker the border color of the cells
 interface OrderTableProps {
-  data: OrderResponseItem[];
+  data: CalculateOrderResponse;
 }
 
 export default function OrderBySizeTable({ data }: OrderTableProps) {
-  
+  const itemsDetails = data.order;
+
+  let rowColorToggle = true
+
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full border-collapse table-border">
@@ -28,36 +28,58 @@ export default function OrderBySizeTable({ data }: OrderTableProps) {
           </tr>
         </thead>
         <tbody>
-          {data.map((item, index) => (
-            <React.Fragment key={index}>
-              {item.details.map((detail, detailIndex) => (
-                <tr key={index} className={index % 2 === 0 ? "bg-white" : "table-bg-accent"}>
-                  <React.Fragment key={detailIndex}>
-                    <td className="px-4 py-2 table-border text-xs">{detail.product}</td>
-                    <td className="px-4 py-2 table-border text-xs text-center">{detail.product_quantity}</td>
-                    <td className="px-4 py-2 table-border text-xs">{detail.piece}</td>
-                    {detailIndex === 0 && (
-                      <>
-                        <td rowSpan={item.details.length} className="px-4 py-2 table-border text-lg font-bold text-center">{item.x}</td>
-                        <td rowSpan={item.details.length} className="px-4 py-2 table-border text-lg font-bold text-center">{item.y}</td>
-                        <td rowSpan={item.details.length} className="px-4 py-2 table-border text-lg font-bold text-center">{item.z}</td>
-                      </>
-                    )}  
-                    <td className="px-4 py-2 table-border text-xs text-center">{detail.quantity}</td>
-                    <td className="px-4 py-2 table-border text-xs text-center">{detail.total_quantity}</td>
-                    {detailIndex === 0 && (
-                      <>
-                        <td rowSpan={item.details.length} className="px-4 py-2 table-border text-lg font-bold text-center">{item.total_quantity}</td>
-                        <td rowSpan={item.details.length} className="px-4 py-2 table-border text-lg font-bold text-center">{item.planks_needed}</td>
-                      </>
-                    )}  
-                  </React.Fragment>
-                </tr>
-              ))}
-            </React.Fragment>
-          ))}
+          {itemsDetails.map((item_bitola, index_bitola) => {
+            let firstRenderPlanksNeeded = true;
+
+            return (
+              <React.Fragment key={index_bitola}>
+                {item_bitola.details.map((item_size, index_size) => {
+                  let firstRenderForSize = true;
+                  const rowColorClass = rowColorToggle  ? "bg-white" : "table-bg-accent";
+                  rowColorToggle = !rowColorToggle;
+                  
+                  return (
+                    <React.Fragment key={index_size}>
+                      {item_size.details.map((detail, detailIndex) => (
+                        <tr key={detailIndex} className={rowColorClass}>
+                          <React.Fragment key={detailIndex}>
+                            <td className="px-4 py-2 table-border text-xs">{detail.product}</td>
+                            <td className="px-4 py-2 table-border text-xs text-center">{detail.product_quantity}</td>
+                            <td className="px-4 py-2 table-border text-xs">{detail.piece}</td>
+
+                            {firstRenderForSize && (
+                              <>
+                                <td rowSpan={item_size.details.length} className="px-4 py-2 table-border text-lg font-bold text-center">{item_size.x}</td>
+                                <td rowSpan={item_size.details.length} className="px-4 py-2 table-border text-lg font-bold text-center">{item_size.y}</td>
+                                <td rowSpan={item_size.details.length} className="px-4 py-2 table-border text-lg font-bold text-center">{item_size.z}</td>
+                              </>
+                            )}
+                            
+                            <td className="px-4 py-2 table-border text-xs text-center">{detail.quantity}</td>
+                            <td className="px-4 py-2 table-border text-xs text-center">{detail.total_quantity}</td>
+
+                            {firstRenderForSize && (
+                              <td rowSpan={item_size.details.length} className="px-4 py-2 table-border text-lg font-bold text-center">{item_size.total_quantity}</td>
+                            )}
+
+                            {firstRenderPlanksNeeded && (
+                              <td rowSpan={item_bitola.item_count} className="px-4 py-2 table-border text-lg font-bold text-center bg-white">
+                                {item_bitola.planks_needed}
+                              </td>
+                            )}
+                            {firstRenderPlanksNeeded = false}
+                            {firstRenderForSize = false}
+                          </React.Fragment>
+                        </tr>
+                      ))}
+                    </React.Fragment>
+                  );
+                })}
+              </React.Fragment>
+            );
+          })}
         </tbody>
       </table>
     </div>
   );
-};
+}
