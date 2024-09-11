@@ -1,15 +1,12 @@
-from io import StringIO
-import chardet
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from app.serializers import ProductSerializer
 from app.models import Product, Piece, ProductPiece
 from django.db import transaction
-import pandas as pd
 from rest_framework.parsers import MultiPartParser
 
-from app.utils.csv_utisl import convert_to_utf8, detect_encoding, validate_columns
+from app.utils.pieces_csv_parser import parse_csv
 
 def register_product_with_pieces(product_name, pieces_data, image_file=None):
     """
@@ -43,7 +40,7 @@ class ProductView(APIView):
         product_serializer = ProductSerializer(data=request.data)
         if product_serializer.is_valid():
             product = product_serializer.save()
-            return Response({'message': 'Product and pieces added successfully', 'product_id': product.id}, status=status.HTTP_201_CREATED)
+            return Response({'message': 'Produto e peças relacionadas adicionados com sucesso', 'product_id': product.id}, status=status.HTTP_201_CREATED)
         return Response(product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, id=None):
@@ -52,7 +49,7 @@ class ProductView(APIView):
                 # Prefetch related ProductPiece and Piece objects to optimize queries
                 product = Product.objects.prefetch_related('product_pieces__piece').get(id=id)
             except Product.DoesNotExist:
-                return Response({'message': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'message': 'Produto não encontrado'}, status=status.HTTP_404_NOT_FOUND)
             serializer = ProductSerializer(product)
         else:
             # Prefetch related ProductPiece and Piece objects and order by '-id' to show latest products first
@@ -67,22 +64,22 @@ class ProductView(APIView):
             # Prefetch related ProductPiece and Piece objects to optimize queries
             product = Product.objects.prefetch_related('product_pieces__piece').get(id=id)
         except Product.DoesNotExist:
-            return Response({'message': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': 'Produto não encontrado'}, status=status.HTTP_404_NOT_FOUND)
 
         product_serializer = ProductSerializer(product, data=request.data, partial=True)
         if product_serializer.is_valid():
             product_serializer.save()
-            return Response({'message': 'Product and related pieces updated successfully'})
+            return Response({'message': 'Produto e peças relacionadas atualizados com sucesso'})
         return Response(product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, id):
         try:
             product = Product.objects.get(id=id)
         except Product.DoesNotExist:
-            return Response({'message': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': 'Produto não encontrado'}, status=status.HTTP_404_NOT_FOUND)
 
         product.delete()
-        return Response({'message': 'Product and related pieces deleted successfully'})
+        return Response({'message': 'Produto e peças relacionadas excluídos com sucesso'})
 
 class CSVUploadView(APIView):
     parser_classes = [MultiPartParser]  # Handle multipart form-data for file and image uploads
@@ -93,44 +90,21 @@ class CSVUploadView(APIView):
         image_file = request.FILES.get('image')  # Get the optional image
 
         if not product_name:
-            return Response({"error": "Product name is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Nome do produto é obrigatório"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Handle CSV file upload
         file_obj = request.FILES.get('file')
         if not file_obj or not file_obj.name.endswith('.csv'):
-            return Response({"error": "Invalid file type"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Tipo de arquivo inválido"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Detect the file encoding
-            encoding = detect_encoding(file_obj)
-            print(f"Detected encoding: {encoding}")
-
-            # Convert the file content to UTF-8
-            utf8_file_obj = convert_to_utf8(file_obj, encoding)
-
-            # Read the CSV file using pandas from the UTF-8 content
-            df = pd.read_csv(utf8_file_obj, delimiter=',')
-
-            # Validate the necessary columns
-            required_columns = ['Peça', 'Comp.', 'Larg.', 'Esp.', 'Qtd.']
-            validate_columns(df, required_columns)
-
-            # Prepare pieces data from CSV
-            pieces_data = []
-            for _, row in df.iterrows():
-                piece_data = {
-                    'name': row['Peça'],   # Piece name
-                    'sizeX': row['Comp.'],  # Comprimento
-                    'sizeY': row['Larg.'],  # Largura
-                    'sizeZ': row['Esp.'],   # Espessura
-                    'quantity': row['Qtd.']  # Quantity
-                }
-                pieces_data.append(piece_data)
+            # Parse the CSV to get the pieces data (using the utility function)
+            pieces_data = parse_csv(file_obj)
 
             # Register the product and pieces via the abstract function
             product = register_product_with_pieces(product_name, pieces_data, image_file)
 
-            return Response({'message': 'CSV processed successfully', 'product_id': product.id}, status=status.HTTP_201_CREATED)
+            return Response({'message': 'CSV processado com sucesso', 'product_id': product.id}, status=status.HTTP_201_CREATED)
 
         except ValueError as ve:
             return Response({"error": str(ve)}, status=status.HTTP_400_BAD_REQUEST)

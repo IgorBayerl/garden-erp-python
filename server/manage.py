@@ -45,7 +45,8 @@ def main():
         show_ascii_art()
 
         # Start the system tray icon in a separate thread to keep the server running
-        threading.Thread(target=setup_tray, daemon=True).start()
+        if(is_pyinstaller()):
+            threading.Thread(target=setup_tray, daemon=True).start()
 
     execute_from_command_line(sys.argv)
 

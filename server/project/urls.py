@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, re_path
-from app.views.pieces import PieceView
+from app.views.pieces import CSVParseView, PieceView
 from app.views.products import ProductView, CSVUploadView
 from app.views.orders import calculate_order_by_size, calculate_order_by_product
 from app.views.client import IndexView
@@ -30,6 +30,7 @@ urlpatterns = [
     # Pieces
     path('api/pieces/', PieceView.as_view(), name='pieces_list_create'),  # For GET (list) and POST (create)
     path('api/pieces/<int:id>/', PieceView.as_view(), name='pieces_detail_update_delete'),
+    path('api/pieces/parse-csv/', CSVParseView.as_view(), name='csv-parse'),
 
     # Products  
     path('api/products/', ProductView.as_view(), name='products_list_create'),  # For GET (list) and POST (create)

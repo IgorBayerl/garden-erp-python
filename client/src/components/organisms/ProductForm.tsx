@@ -2,12 +2,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Product } from "@/api/types";
+import { Product, ProductPiece } from "@/api/types";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from "react";
 import { Undo, Save, Plus, Trash } from "lucide-react";
 import { convertToBase64 } from "@/lib/utils";
+import CsvUploadParse from "./CsvUploadParse";
 
 interface ProductFormProps {
   onSubmit: (product: Omit<Product, "id">) => void;
@@ -115,10 +116,14 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing }: ProductF
     onSubmit(productData);
   };
 
+  const setPiecesValue = (pieces: ProductPiece[]) => {
+    form.setValue('product_pieces', pieces);
+  };
+
   return (
     <Form {...form}>
-      <h1 className="text-xl font-semibold px-1">{title}</h1>
-      <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-4 flex flex-col px-1 h-full overflow-hidden">
+      <h1 className="text-xl font-semibold px-1 ">{title}</h1>
+      <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-4 flex flex-col px-1 h-full overflow-hidden ">
         <FormField
           control={form.control}
           name="name"
@@ -278,7 +283,8 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing }: ProductF
                 <Undo className="h-4 w-4 mr-2" />Cancelar
               </Button>
             </div>
-            <div>
+            <div className="flex">
+              <CsvUploadParse setPieces={setPiecesValue} />
               <Button
                 type="button"
                 onClick={handleAddPiece}
