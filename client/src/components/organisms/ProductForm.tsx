@@ -7,7 +7,7 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from "react";
 import { Undo, Save, Plus, Trash } from "lucide-react";
-import { convertToBase64, customZodResolver } from "@/lib/utils";
+import { convertToBase64 } from "@/lib/utils";
 import CsvUploadParse from "./CsvUploadParse";
 
 interface ProductFormProps {
@@ -45,7 +45,7 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing }: ProductF
   }), [initialValues]);
 
   const form = useForm<ProductFormValues>({
-    resolver: customZodResolver(productSchema),
+    resolver: zodResolver(productSchema),
     defaultValues: defaultValues,
   });
 
