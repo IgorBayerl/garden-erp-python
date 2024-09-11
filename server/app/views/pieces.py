@@ -3,6 +3,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from app.models import Piece, ProductPiece
 from app.serializers import PieceSerializer
+from rest_framework.parsers import MultiPartParser
+from django.views.decorators.csrf import csrf_exempt
+
+from app.utils.pieces_csv_parser import parse_csv
 
 class PieceView(APIView):
 
@@ -61,3 +65,43 @@ class PieceView(APIView):
 
         piece.delete()
         return Response({'message': 'Peça excluída com sucesso'})
+
+
+class CSVParseView(APIView):
+    parser_classes = [MultiPartParser]  # Handle multipart form-data for file and image uploads
+
+    @csrf_exempt
+    def post(self, request):
+        # Handle CSV file upload
+        file_obj = request.FILES.get('file')
+        if not file_obj or not file_obj.name.endswith('.csv'):
+            return Response({"error": "Tipo de arquivo inválido"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            list_of_pieces = parse_csv(file_obj)
+
+            piece_data_response = []
+            for piece in list_of_pieces:
+                piece_details = {
+                    'id': 0,   # Piece id
+                    'name': piece['name'],   # Piece name
+                    'sizeX': piece['sizeX'],  # Comprimento
+                    'sizeY': piece['sizeY'],  # Largura
+                    'sizeZ': piece['sizeZ'],  # Espessura
+                }
+                piece_data = {
+                    'quantity': piece['quantity'],  # Quantity
+                    'piece': piece_details
+                }
+
+                piece_data_response.append(piece_data)
+
+            # Return the parsed pieces data (without saving to DB)
+            return Response({'pieces': piece_data_response}, status=status.HTTP_200_OK)
+
+        except ValueError as ve:
+            return Response({"error": str(ve)}, status=status.HTTP_400_BAD_REQUEST)
+        except UnicodeDecodeError:
+            return Response({"error": "Failed to decode the file. Please ensure it is encoded correctly."}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

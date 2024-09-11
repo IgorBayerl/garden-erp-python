@@ -1,4 +1,4 @@
-import { Package, Factory } from "lucide-react";
+import { Package, Factory, Home } from "lucide-react";
 import GardenLogo from "@/components/ui/garden-logo";
 import SidebarItem from "@/components/layout/SidebarItem";
 import { Separator } from "@/components/ui/separator";
@@ -14,6 +14,11 @@ export default function Sidebar() {
         </div>
         <div className="flex-1">
           <nav className="grid items-start text-sm font-medium px-4">
+            <SidebarItem
+              to="/"
+              label="Início"
+              icon={<Home className="h-4 w-4" />}
+            />
             <SidebarItem
               to="/orders"
               label="Ordens de produção"

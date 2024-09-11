@@ -24,6 +24,17 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['id', 'name', 'image', 'product_pieces']
+    
+    def to_representation(self, instance):
+        """Override to_representation to modify image URL"""
+        representation = super().to_representation(instance)
+
+        # Add /media/ prefix if the image field exists and is not already a full URL
+        if representation.get('image'):
+            if not representation['image'].startswith('/media/'):
+                representation['image'] = f'/media/{representation["image"]}'
+
+        return representation
 
     def create(self, validated_data):
         product_pieces_data = validated_data.pop('product_pieces')

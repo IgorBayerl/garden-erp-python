@@ -213,14 +213,14 @@ export default function ProductTable({ products, onSelectProduct }: ProductTable
       {isDeleteModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded shadow-lg">
-            <h2 className="text-lg font-bold mb-4">Confirm Delete</h2>
-            <p>Are you sure you want to delete this product?</p>
+            <h2 className="text-lg font-bold mb-4">Confirmar exclusão</h2>
+            <p>Você tem certeza que deseja excluir esse produto?</p>	
             <div className="flex justify-end space-x-4 mt-4">
               <Button variant="outline" onClick={closeDeleteModal}>
-                Cancel
+                Cancelar
               </Button>
               <Button variant="destructive" onClick={confirmDeleteProduct}>
-                Delete
+                Deletar
               </Button>
             </div>
           </div>

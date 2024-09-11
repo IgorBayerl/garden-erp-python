@@ -11,7 +11,7 @@ import { CalculateOrderRequest, useCalculateOrderBySize } from "@/api/orders";
 import ErrorState from "@/components/layout/ErrorState";
 import SkeletonLoader from "@/components/layout/SkeletonLoader";
 import OrderBySizeTable from "@/components/organisms/OrderBySizeTable";
-import { Printer, Trash, Ellipsis, Save } from "lucide-react";
+import { Printer, Trash, Ellipsis, Save, Plus } from "lucide-react";
 import { useSessionStorage } from 'usehooks-ts'
 import { useReactToPrint } from "react-to-print";
 import { Card } from "@/components/ui/card";
@@ -32,28 +32,17 @@ export default function OrdersPage() {
   const addProductToOrder = () => {
     if (selectedProduct && quantity > 0) {
       setOrder([...order, { product: selectedProduct, quantity }]);
-      // setSelectedProduct(null);
-      // setQuantity(1);
+      setSelectedProduct(null);
+      setQuantity(1);
     }
   };
 
   const handlePrint = useReactToPrint({
     content: () => tableRef.current,
     documentTitle: "OrderBySizeTable",
-    onBeforeGetContent: () => {
-      // Inject custom styles for printing
-      const styleElement = document.createElement("style");
-      styleElement.innerHTML = `
-        @media print {
-          body {
-            margin: 0 -90px; /* Adjust margin as needed */
-            scale: 75%; /* Scale down font size */
-          }
-        }
-      `;
-      document.head.appendChild(styleElement);
+    onAfterPrint: () => {
+      //TODO: Save the printed order
     },
-    onAfterPrint: () => {},
   });
 
   const handleClearOrder = () => {
@@ -68,7 +57,6 @@ export default function OrdersPage() {
     const orderRequest: CalculateOrderRequest = {
       order: "desc", // or 'asc', depending on your needs
       plank_size: 3000,
-      sort_by: ["z", "y", "x"],
       products: order.map((item) => ({
         product_id: item.product.id,
         quantity: item.quantity,
@@ -133,8 +121,8 @@ export default function OrdersPage() {
                         onChange={(e) => setQuantity(Number(e.target.value))}
                       />
                     </div>
-                    <Button onClick={addProductToOrder} className="self-end" title="Adicionar">
-                      Adicionar
+                    <Button onClick={addProductToOrder} className="self-end" size="icon" title="Adicionar">
+                      <Plus className="h-4 w-4" />
                     </Button>
                   </div>
                   <ScrollArea className="flex flex-col">

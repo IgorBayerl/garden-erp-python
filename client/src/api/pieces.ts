@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from './api';
-import { APIErrorResponse, DeletePieceErrorResponse, Piece } from './types';
+import api from '@/api/api';
+import { APIErrorResponse, DeletePieceErrorResponse, Piece, ProductPiece } from '@/api/types';
 import { toast } from 'sonner';
 import { AxiosError } from 'axios';
 
@@ -112,3 +112,24 @@ const handleDeletePieceError = (error: AxiosError<DeletePieceErrorResponse>) => 
 };
 
 
+// Upload a CSV and get the list of pieces
+export const useParseCsvProduct = () => {
+  return useMutation({
+    mutationFn: async (formData: FormData) => {
+      const response = await api.post<{ pieces: ProductPiece[] }>('/pieces/parse-csv/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data.pieces;  // Return the parsed list of pieces
+    },
+    onSuccess: (pieces: ProductPiece[]) => {
+      toast.success('CSV processado com sucesso');
+      console.log('Parsed pieces:', pieces);  // Log the pieces or handle them as needed
+    },
+    onError: (error: AxiosError<APIErrorResponse>) => {
+      const errorMessage = error.response?.data?.message || 'Erro ao processar o CSV';
+      toast.error(errorMessage);
+    },
+  });
+};

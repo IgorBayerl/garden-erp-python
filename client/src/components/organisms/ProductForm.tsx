@@ -2,12 +2,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Product } from "@/api/types";
+import { Product, ProductPiece } from "@/api/types";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from "react";
 import { Undo, Save, Plus, Trash } from "lucide-react";
 import { convertToBase64 } from "@/lib/utils";
+import CsvUploadParse from "./CsvUploadParse";
 
 interface ProductFormProps {
   onSubmit: (product: Omit<Product, "id">) => void;
@@ -21,7 +22,7 @@ const productSchema = z.object({
   product_pieces: z.array(
     z.object({
       piece: z.object({
-        id: z.preprocess((val) => Number(val), z.number()),  
+        id: z.preprocess((val) => Number(val) || 0, z.number()),
         name: z.string().min(1, "Nome da peça é obrigatório"),
         sizeX: z.preprocess((val) => Number(val), z.number().positive("Comprimento deve ser positivo")),
         sizeY: z.preprocess((val) => Number(val), z.number().positive("Largura deve ser positivo")),
@@ -115,10 +116,14 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing }: ProductF
     onSubmit(productData);
   };
 
+  const setPiecesValue = (pieces: ProductPiece[]) => {
+    form.setValue('product_pieces', pieces);
+  };
+
   return (
     <Form {...form}>
-      <h1 className="text-xl font-semibold px-1">{title}</h1>
-      <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-4 flex flex-col px-1 h-full overflow-hidden">
+      <h1 className="text-xl font-semibold px-1 ">{title}</h1>
+      <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-4 flex flex-col px-1 h-full overflow-hidden ">
         <FormField
           control={form.control}
           name="name"
@@ -168,8 +173,9 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing }: ProductF
             </FormItem>
           )}
         />
-
+          
         <div className="overflow-hidden flex-grow flex flex-col justify-between gap-2">
+
           <div className="overflow-hidden flex flex-col ">
             <div className="grid grid-cols-12 gap-4 border-b pb-2 px-1">
               <span className="font-semibold col-span-4">Nome da Peça</span> {/* Larger width for this column */}
@@ -278,9 +284,11 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing }: ProductF
                 <Undo className="h-4 w-4 mr-2" />Cancelar
               </Button>
             </div>
-            <div>
+            <div className="flex space-x-2">
+              <CsvUploadParse setPieces={setPiecesValue} />
               <Button
                 type="button"
+                variant="outline" 
                 onClick={handleAddPiece}
               >
                 <Plus className="h-4 w-4 mr-2" />Adicionar Peça

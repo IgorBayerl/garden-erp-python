@@ -77,6 +77,15 @@
   .table-bg-accent {
     @apply bg-gray-100 print:bg-gray-200;
   }
+  .table-text-sm {
+    @apply text-[0.7rem] print:text-[0.7rem];
+  }
+  .table-text-lg {
+    @apply text-lg print:text-base;
+  }
+  .table-cell-padding {
+    @apply px-4 py-2 print:px-2 print:py-1;
+  }
 }
 
 @layer base {

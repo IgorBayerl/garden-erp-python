@@ -13,6 +13,8 @@ import os
 from pathlib import Path
 import sys
 
+from extras.utils import is_pyinstaller
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -33,7 +35,7 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-t!ckp-@k*d72ssxoxrsu6rlcogu09fv*=5qc2z+5z095mn(2z%'
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# SECURITY WARNING: don't run with debug turned on in production! check if pyinstaller
 DEBUG = True
 
 ALLOWED_HOSTS = ['*', 'localhost']

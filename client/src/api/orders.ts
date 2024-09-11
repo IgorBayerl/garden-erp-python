@@ -1,14 +1,9 @@
 import { useMutation } from '@tanstack/react-query';
-import api from './api';
+import api from '@/api/api';
 
 // Define the types for the request and response structures
 export interface CalculateOrderRequest {
   order: 'asc' | 'desc';
-  /**
-   * The order of the sort_by array determines the order of the returned data.
-   * For example, if the sort_by array is ['x', 'y', 'z'], the returned data will be sorted by x, y, z.
-   */
-  sort_by: ['x' | 'y' | 'z', 'x' | 'y' | 'z', 'x' | 'y' | 'z'];
   plank_size: number;
   products: {
     product_id: number;
@@ -24,20 +19,37 @@ interface OrderDetail {
   total_quantity: number;
 }
 
-export interface OrderResponseItem {
+export interface OrderResponseDetailItem {
   x: number;
   y: number;
   z: number;
   total_quantity: number;
-  planks_needed: number;
   details: OrderDetail[];
+}
+
+export interface OrderResponseGroup {
+  y: number;
+  z: number;
+  planks_needed: number;
+  item_count: number;
+  details: OrderResponseDetailItem[]; // Grouped by `sizeY` and `sizeZ`, with details for each `sizeX`
+}
+
+export interface CalculateOrderResponse {
+  requested_products: {
+    product: string;
+    image?: string | null;
+    total_quantity: number;
+    pieces: number;
+  }[];
+  order: OrderResponseGroup[];
 }
 
 // API call to calculate order by size
 export const useCalculateOrderBySize = () => {
   return useMutation({
     mutationFn: async (data: CalculateOrderRequest) => {
-      const response = await api.post<OrderResponseItem[]>('/orders/calculate_order_by_size/', data);
+      const response = await api.post<CalculateOrderResponse>('/orders/calculate_order_by_size/', data);
       return response.data;
     },
   });
