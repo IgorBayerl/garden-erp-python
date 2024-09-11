@@ -173,8 +173,9 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing }: ProductF
             </FormItem>
           )}
         />
-
+          
         <div className="overflow-hidden flex-grow flex flex-col justify-between gap-2">
+
           <div className="overflow-hidden flex flex-col ">
             <div className="grid grid-cols-12 gap-4 border-b pb-2 px-1">
               <span className="font-semibold col-span-4">Nome da Peça</span> {/* Larger width for this column */}
@@ -283,7 +284,7 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing }: ProductF
                 <Undo className="h-4 w-4 mr-2" />Cancelar
               </Button>
             </div>
-            <div className="flex">
+            <div className="flex space-x-2">
               <CsvUploadParse setPieces={setPiecesValue} />
               <Button
                 type="button"

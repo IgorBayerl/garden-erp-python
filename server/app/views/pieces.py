@@ -83,6 +83,7 @@ class CSVParseView(APIView):
             piece_data_response = []
             for piece in list_of_pieces:
                 piece_details = {
+                    'id': 0,   # Piece id
                     'name': piece['name'],   # Piece name
                     'sizeX': piece['sizeX'],  # Comprimento
                     'sizeY': piece['sizeY'],  # Largura
