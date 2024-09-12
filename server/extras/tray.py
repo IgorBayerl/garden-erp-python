@@ -1,3 +1,4 @@
+import os
 import sys
 import threading
 import pystray
@@ -15,7 +16,14 @@ def create_image():
 def on_quit(icon, item):
     """Quit the system tray icon and Django server."""
     icon.stop()
-    sys.exit()
+
+    # Use Django management command to stop the server if possible
+    os.system('kill $(lsof -t -i:8000)')  # This will kill the process running on port 8000 (adjust as needed)
+
+    # Then, safely quit the system
+    os._exit(0)
+
+
 
 def setup_tray():
     """Set up the system tray icon."""

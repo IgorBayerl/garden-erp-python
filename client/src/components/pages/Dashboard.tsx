@@ -7,7 +7,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-center h-full">
         <div className="flex flex-col items-center justify-center gap-4">
           <h1 className="text-3xl font-semibold text-center">Bem vindo</h1>
-          <div className="flex gap-4">
+          <div className="flex gap-4 flex-wrap items-center justify-center">
             <Link to="/products" className="w-80">
               <Card className="w-full cursor-pointer hover:bg-secondary transition-colors">
                 <CardHeader>
