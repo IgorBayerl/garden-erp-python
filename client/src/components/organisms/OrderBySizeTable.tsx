@@ -14,26 +14,24 @@ export default function OrderBySizeTable({ data }: OrderTableProps) {
   const formatedDateTime = new Date().toLocaleString('pt-BR');
 
   return (
-    <div className="overflow-x-auto print:mx-4 print:my-4">
-      {/* Add images list with products count */}
-      <div className='print:flex hidden pb-5'>
-        {formatedDateTime}
-      </div>
+    <div className="overflow-x-auto">
       <div className='gap-4 print:flex hidden flex-wrap'>
         {data.requested_products.map((product) => (
           <div key={product.product} className="flex gap-2 flex-col pb-2">
             <Image
               src={product.image || undefined}
               alt={product.product}
-              className="h-32 w-32 max-w-full rounded-lg object-cover bg-secondary aspect-square"
+              className="h-32 w-32 max-w-full rounded-lg object-scale-down bg-secondary aspect-square"
             />
             <div className="flex flex-col gap-2 items-center max-w-[8rem]">
-              <h2 className="text-center truncate w-full">{product.product}</h2>
-              <p className="text-sm text-muted-foreground w-full text-center">{product.total_quantity}</p>
+              <h2 className="text-center truncate w-full text-xs">{product.product}</h2>
+              <p className="text-xs text-muted-foreground w-full text-center">{product.total_quantity}</p>
             </div>
           </div>
         ))}
       </div>
+      {/* The date/time that will appear on every page */}
+      <div className="print:block print-date hidden">{formatedDateTime}</div>
       <table className="min-w-full border-collapse table-border">
         <thead className="table-bg-accent">
           <tr>
@@ -63,7 +61,10 @@ export default function OrderBySizeTable({ data }: OrderTableProps) {
                   return (
                     <React.Fragment key={index_size}>
                       {item_size.details.map((detail, detailIndex) => (
-                        <tr key={detailIndex} className={rowColorClass}>
+                        <tr
+                          key={detailIndex} 
+                          className={rowColorClass}
+                        >
                           <React.Fragment key={detailIndex}>
                             <td className="table-cell-padding table-border table-text-sm">{detail.product}</td>
                             <td className="table-cell-padding table-border table-text-sm text-center">{detail.product_quantity}</td>
@@ -85,7 +86,7 @@ export default function OrderBySizeTable({ data }: OrderTableProps) {
                             )}
 
                             {firstRenderPlanksNeeded && (
-                              <td rowSpan={item_bitola.item_count} className="table-cell-padding table-border table-text-lg font-bold text-center bg-white">
+                              <td rowSpan={item_bitola.item_count} className="avoid-break table-cell-padding table-border table-text-lg font-bold text-center bg-white">
                                 {item_bitola.planks_needed}
                               </td>
                             )}

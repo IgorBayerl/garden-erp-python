@@ -104,9 +104,12 @@ def calculate_order_by_size(request):
     reverse = True if order == 'desc' else False
 
     def sort_function(item):
-        return (item['y'], item['z'])  # Sort by 'y' and 'z'
+        # Sort by 'z' first, then by 'y', both in descending order
+        return (-item['z'], -item['y'])
 
-    order_details = sorted(pieces_by_size_group.values(), key=sort_function, reverse=reverse)
+    # Sort the order_details using the updated sort function
+    order_details = sorted(pieces_by_size_group.values(), key=sort_function, reverse=False)
+
 
     # Final response structure
     response = {
