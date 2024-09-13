@@ -16,7 +16,7 @@ export default function OrderBySizeTable({ data }: OrderTableProps) {
 
   return (
     <div className="overflow-x-auto">
-      <div className='gap-4 print:flex hidden flex-wrap'>
+      <div className='gap-4 print:flex hidden flex-wrap print-images-header'>
         {data.requested_products.map((product) => (
           <div key={product.product} className="flex gap-2 flex-col pb-2">
             <Image
@@ -86,11 +86,11 @@ export default function OrderBySizeTable({ data }: OrderTableProps) {
                             <td className="table-cell-padding table-border table-text-sm text-center">{detail.total_quantity}</td>
 
                             {firstRenderForSize && (
-                              <td rowSpan={item_size.details.length} className="table-cell-padding table-border table-text-lg font-bold text-center">{item_size.total_quantity}</td>
+                              <td rowSpan={item_size.details.length} className="avoid-break table-cell-padding table-border table-text-lg font-bold text-center">{item_size.total_quantity}</td>
                             )}
 
                             {firstRenderPlanksNeeded && (
-                              <td rowSpan={item_bitola.item_count} className="avoid-break table-cell-padding table-border table-text-lg font-bold text-center bg-white">
+                              <td rowSpan={item_bitola.item_count} className="table-cell-padding table-border table-text-lg font-bold text-center bg-white">
                                 {item_bitola.planks_needed}
                               </td>
                             )}
