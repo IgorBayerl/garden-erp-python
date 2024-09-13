@@ -1,6 +1,7 @@
 import React from 'react';
 import { type CalculateOrderResponse } from '@/api/orders';
 import Image from "../ui/image";
+import { cn } from '@/lib/utils';
 
 interface OrderTableProps {
   data: CalculateOrderResponse;
@@ -55,15 +56,18 @@ export default function OrderBySizeTable({ data }: OrderTableProps) {
               <React.Fragment key={index_bitola}>
                 {item_bitola.details.map((item_size, index_size) => {
                   let firstRenderForSize = true;
-                  const rowColorClass = rowColorToggle  ? "bg-white" : "table-bg-accent";
+                  const classRow = cn(
+                    rowColorToggle ? 'bg-white' : 'table-bg-accent',
+                  )
+
                   rowColorToggle = !rowColorToggle;
-                  
+                 
                   return (
                     <React.Fragment key={index_size}>
                       {item_size.details.map((detail, detailIndex) => (
                         <tr
                           key={detailIndex} 
-                          className={rowColorClass}
+                          className={classRow}
                         >
                           <React.Fragment key={detailIndex}>
                             <td className="table-cell-padding table-border table-text-sm">{detail.product}</td>

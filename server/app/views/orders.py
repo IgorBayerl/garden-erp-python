@@ -101,14 +101,23 @@ def calculate_order_by_size(request):
         group_data['planks_needed'] = math.ceil(group_data['planks_needed_size_sum'] / plank_size)
 
     # Determine sort order
-    reverse = True if order == 'desc' else False
+    reverse = False
 
-    def sort_function(item):
+    def sort_bitola(item):
         # Sort by 'z' first, then by 'y', both in descending order
         return (-item['z'], -item['y'])
+    
+    def sort_x(item):
+        # Sort by 'x' first
+        return (-item['x'])
+    
+    # Loop through the groups and sort the details within each group
+    for group in pieces_by_size_group.values():
+        # Sort the details within each group by 'x', 'y', and 'z' in descending order   
+        group['details'] = sorted(group['details'], key=sort_x, reverse=reverse)
 
     # Sort the order_details using the updated sort function
-    order_details = sorted(pieces_by_size_group.values(), key=sort_function, reverse=False)
+    order_details = sorted(pieces_by_size_group.values(), key=sort_bitola, reverse=reverse)
 
 
     # Final response structure
