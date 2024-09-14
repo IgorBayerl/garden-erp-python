@@ -1,8 +1,8 @@
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useCreateProduct, useGetProducts, useUpdateProduct } from "@/api/products";
 import { Button } from "@/components/ui/button";
 import ErrorState from "@/components/layout/ErrorState";
 import SkeletonLoader from "@/components/layout/SkeletonLoader";
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { useRef, useState } from "react";
 import { Product } from "@/api/types";
 import { Plus } from "lucide-react";
@@ -16,38 +16,41 @@ export default function ProductsPage() {
   const updateProductMutation = useUpdateProduct();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // Use Product including id for updates
   const formRef = useRef<{ resetForm: () => void }>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false); // Control Sheet visibility
 
   const handleCreateProduct = (newProduct: Omit<Product, 'id'>) => {
-    console.log('Handle create product');
     createProductMutation.mutate(newProduct, {
       onSuccess: () => {
         formRef.current?.resetForm();
         setSelectedProduct(null);
+        setIsSheetOpen(false); // Close sheet after success
       },
     });
   };
 
   const handleUpdateProduct = (updatedProduct: Omit<Product, 'id'>) => {
-    console.log('Handle UPDATE product');
     const requestData = {
       id: selectedProduct?.id || 0,
       ...updatedProduct,
-    }
+    };
     updateProductMutation.mutate(requestData, {
       onSuccess: () => {
         formRef.current?.resetForm();
         setSelectedProduct(null);
+        setIsSheetOpen(false); // Close sheet after success
       },
     });
   };
 
   const handleSelectProduct = (product: Product) => {
-    setSelectedProduct({ ...product, id: product.id }); // Include the id for updates
+    setSelectedProduct({ ...product, id: product.id });
+    setIsSheetOpen(true); // Open sheet when editing
   };
 
   const handleNewItem = () => {
     setSelectedProduct(null);
     formRef.current?.resetForm();
+    setIsSheetOpen(true); // Open sheet when adding new product
   };
 
   const isLoadingState = productsLoading;
@@ -69,27 +72,26 @@ export default function ProductsPage() {
 
       {!productsLoading && !productsError && products && (
         <div className="flex flex-col flex-1 overflow-hidden">
-          <ResizablePanelGroup direction="horizontal">
-            <ResizablePanel minSize={32} className="flex flex-col">
-              <ProductTable products={products} onSelectProduct={handleSelectProduct} />
-            </ResizablePanel>
-            <ResizableHandle withHandle className="m-4" />
-            <ResizablePanel
-              minSize={49}
-              defaultSize={52}
-              className="flex flex-col"
-              autoSave="products_view"
-            >
-              <ProductForm
-                ref={formRef}
-                onSubmit={selectedProduct ? handleUpdateProduct : handleCreateProduct}
-                initialValues={selectedProduct || undefined}
-                isEditing={!!selectedProduct}
-              />
-            </ResizablePanel>
-          </ResizablePanelGroup>
+          <ProductTable products={products} onSelectProduct={handleSelectProduct} />
         </div>
       )}
+
+      {/* Sheet component for form */}
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent side="right" className="w-fit md:max-w-none flex flex-col" >
+          <SheetHeader>
+            <SheetTitle className="text-xl p-1">{selectedProduct ? "Editar Produto" : "Adicionar Produto"}</SheetTitle>
+          </SheetHeader>
+          <div className="w-full h-full max-w-[850px] flex flex-col overflow-hidden">
+            <ProductForm
+              ref={formRef}
+              onSubmit={selectedProduct ? handleUpdateProduct : handleCreateProduct}
+              initialValues={selectedProduct || undefined}
+              isEditing={!!selectedProduct}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
     </main>
   );
 }

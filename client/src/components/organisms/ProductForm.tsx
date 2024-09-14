@@ -97,7 +97,6 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing }: ProductF
     })
   }
 
-  const title = isEditing ? "Editando produto" : "Adicionando produto";
   const buttonText = isEditing ? "Salvar produto" : "Adicionar produto";
 
   const onFormSubmit = async (values: ProductFormValues) => {
@@ -122,58 +121,86 @@ const ProductForm = forwardRef(({ onSubmit, initialValues, isEditing }: ProductF
 
   return (
     <Form {...form}>
-      <h1 className="text-xl font-semibold px-1 ">{title}</h1>
       <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-4 flex flex-col px-1 h-full overflow-hidden ">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="line-clamp-1">Nome do produto</FormLabel>
-              <FormControl>
-                <Input title="Nome" placeholder="Nome" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="image"
-          render={() => (
-            <FormItem onPaste={handlePaste}>
-              <FormLabel className="block text-sm font-medium">Imagem (Colar ou carregar)</FormLabel>
-              <div className="border-2 border-dashed rounded-md p-4 h-32 flex items-center justify-center text-center">
-                {pastedImage ? (
-                  <img
-                    src={URL.createObjectURL(pastedImage)}
-                    alt="Uploaded or Pasted"
-                    className="max-h-full"
+        <div className="flex justify-between space-x-4">
+          <div className="flex flex-col space-y-2 flex-1">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="line-clamp-1">Nome do produto</FormLabel>
+                  <FormControl>
+                    <Input title="Nome" placeholder="Nome" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              disabled={true}
+              name="linha"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="line-clamp-1">Linha</FormLabel>
+                  <FormControl>
+                    <Input title="Linha" placeholder="Linha" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              disabled={true}
+              name="cliente"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="line-clamp-1">Cliente</FormLabel>
+                  <FormControl>
+                    <Input title="Cliente" placeholder="Cliente" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <FormField
+            control={form.control}
+            name="image"
+            render={() => (
+              <FormItem onPaste={handlePaste}>
+                <FormLabel className="block text-sm font-medium">Imagem (Colar ou carregar)</FormLabel>
+                <div className="border-2 border-dashed rounded-md flex items-center justify-center text-center aspect-[4/3] h-52">
+                  {pastedImage ? (
+                    <img
+                      src={URL.createObjectURL(pastedImage)}
+                      alt="Uploaded or Pasted"
+                      className="max-h-full"
+                    />
+                  ) : (
+                    <p className="px-4">
+                      Cole uma imagem aqui ou{" "}
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById("image-upload")?.click()}
+                        className="text-blue-500 underline text-sm"
+                      >
+                        selecione do seu computador
+                      </button>
+                    </p>
+                  )}
+                  <input
+                    id="image-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
                   />
-                ) : (
-                  <p>
-                    Cole uma imagem aqui ou{" "}
-                    <button
-                      type="button"
-                      onClick={() => document.getElementById("image-upload")?.click()}
-                      className="text-blue-500 underline text-sm"
-                    >
-                      selecione do seu computador
-                    </button>
-                  </p>
-                )}
-                <input
-                  id="image-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                />
-              </div>
-            </FormItem>
-          )}
-        />
-          
+                </div>
+              </FormItem>
+            )}
+          />
+        </div>
         <div className="overflow-hidden flex-grow flex flex-col justify-between gap-2">
 
           <div className="overflow-hidden flex flex-col ">

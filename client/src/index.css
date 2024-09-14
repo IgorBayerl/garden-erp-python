@@ -95,3 +95,41 @@
     margin: 0;
   }
 }
+
+@media print {
+  /* Ensure the date is fixed in the bottom left corner */
+  .print-date {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    padding: 0px;
+    font-size: 12px;
+    color: black;
+    width: 100%;
+    text-align: left;
+    z-index: 1000;
+  }
+
+
+  .avoid-break {
+    page-break-inside: avoid; /* Ensure page break before item_size when printing */
+  }
+
+  /* Add invisible margin (spacing) before the header when it appears on a new page */
+  /* thead:before {
+    content: "";
+    display: block;
+    height: 10mm; 
+    margin: 0; 
+    background: white; 
+    z-index: 100;
+  } */
+
+  /* table {
+    border-color: white!important;
+  } */
+
+  .print-images-header {
+    z-index: 300;
+  }
+}
