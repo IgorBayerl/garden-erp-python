@@ -1,0 +1,60 @@
+2024-09-16 13:13:05,232 - INFO - C:\www\garden-erp-python\server\project\urls.py changed, reloading.
+2024-09-16 13:13:12,419 - WARNING - version.txt not found.
+2024-09-16 13:13:12,751 - INFO - Latest hash retrieved: 01e7d41a, published at: 2024-09-14T14:19:25Z
+2024-09-16 13:13:22,809 - WARNING - version.txt not found.
+2024-09-16 13:13:22,875 - INFO - Latest hash retrieved: 01e7d41a, published at: 2024-09-14T14:19:25Z
+2024-09-16 13:13:38,289 - WARNING - Method Not Allowed: /api/update/
+2024-09-16 13:13:42,306 - ERROR - Internal Server Error: /api/update/
+2024-09-16 13:13:48,529 - INFO - C:\www\garden-erp-python\server\project\urls.py changed, reloading.
+2024-09-16 13:14:07,861 - INFO - Updater started.
+2024-09-16 13:14:08,580 - WARNING - version.txt not found.
+2024-09-16 13:14:08,896 - INFO - Latest hash retrieved: 01e7d41a, published at: 2024-09-14T14:19:25Z
+2024-09-16 13:14:08,896 - INFO - Update available. Current hash: None, Latest hash: 01e7d41a
+2024-09-16 13:14:08,955 - INFO - Asset download URL found: https://github.com/IgorBayerl/garden-erp-python/releases/download/01e7d41a/GardenErp-01e7d41a.zip
+2024-09-16 13:14:08,955 - INFO - Downloading update...
+2024-09-16 13:14:12,102 - INFO - Downloaded file from https://github.com/IgorBayerl/garden-erp-python/releases/download/01e7d41a/GardenErp-01e7d41a.zip to update.zip
+2024-09-16 13:14:12,102 - INFO - Download complete.
+2024-09-16 13:14:12,102 - INFO - Stopping application...
+2024-09-16 13:14:13,148 - INFO - GardenErp.exe not running.
+2024-09-16 13:14:13,148 - INFO - Backing up current files...
+2024-09-16 13:14:13,188 - INFO - Backed up static to backup\static
+2024-09-16 13:14:13,188 - INFO - Applying update...
+2024-09-16 13:14:13,432 - INFO - Extracted update.zip to update_temp
+2024-09-16 13:14:13,434 - INFO - Moved C:\www\garden-erp-python\server\update_temp\GardenErp-01e7d41a\GardenErp.exe to C:\www\garden-erp-python\server\GardenErp.exe
+2024-09-16 13:14:13,443 - INFO - Removed existing C:\www\garden-erp-python\server\static
+2024-09-16 13:14:13,444 - INFO - Moved C:\www\garden-erp-python\server\update_temp\GardenErp-01e7d41a\static to C:\www\garden-erp-python\server\static
+2024-09-16 13:14:13,445 - INFO - Update applied.
+2024-09-16 13:14:13,445 - INFO - Starting application...
+2024-09-16 13:14:13,557 - INFO - GardenErp.exe started.
+2024-09-16 13:14:46,875 - WARNING - version.txt not found.
+2024-09-16 13:14:47,188 - INFO - Latest hash retrieved: 01e7d41a, published at: 2024-09-14T14:19:25Z
+2024-09-16 13:14:54,448 - INFO - Current hash: 01e7d41a
+2024-09-16 13:14:54,535 - INFO - Latest hash retrieved: 01e7d41a, published at: 2024-09-14T14:19:25Z
+2024-09-16 13:38:11,822 - WARNING - version.txt not found.
+2024-09-16 13:38:12,155 - INFO - Latest hash retrieved: 01e7d41a, published at: 2024-09-14T14:19:25Z
+2024-09-16 13:38:17,934 - WARNING - version.txt not found.
+2024-09-16 13:38:17,998 - INFO - Latest hash retrieved: 01e7d41a, published at: 2024-09-14T14:19:25Z
+2024-09-16 13:38:48,513 - WARNING - version.txt not found.
+2024-09-16 13:38:48,837 - INFO - Latest hash retrieved: 01e7d41a, published at: 2024-09-14T14:19:25Z
+2024-09-16 13:38:58,434 - WARNING - version.txt not found.
+2024-09-16 13:38:58,501 - INFO - Latest hash retrieved: 01e7d41a, published at: 2024-09-14T14:19:25Z
+2024-09-16 13:39:03,558 - WARNING - version.txt not found.
+2024-09-16 13:39:03,623 - INFO - Latest hash retrieved: 01e7d41a, published at: 2024-09-14T14:19:25Z
+2024-09-16 13:39:44,005 - WARNING - version.txt not found.
+2024-09-16 13:39:44,308 - INFO - Latest hash retrieved: 01e7d41a, published at: 2024-09-14T14:19:25Z
+2024-09-16 13:39:57,335 - WARNING - version.txt not found.
+2024-09-16 13:39:57,398 - INFO - Latest hash retrieved: 01e7d41a, published at: 2024-09-14T14:19:25Z
+2024-09-16 13:39:59,755 - WARNING - version.txt not found.
+2024-09-16 13:39:59,826 - INFO - Latest hash retrieved: 01e7d41a, published at: 2024-09-14T14:19:25Z
+2024-09-16 13:40:02,118 - WARNING - version.txt not found.
+2024-09-16 13:40:02,175 - INFO - Latest hash retrieved: 01e7d41a, published at: 2024-09-14T14:19:25Z
+2024-09-16 13:40:19,188 - WARNING - version.txt not found.
+2024-09-16 13:40:19,487 - INFO - Latest hash retrieved: 01e7d41a, published at: 2024-09-14T14:19:25Z
+2024-09-16 13:40:21,689 - WARNING - Forbidden (Origin checking failed - http://localhost:5173 does not match any trusted origins.): /api/run-updater/
+2024-09-16 13:40:25,565 - WARNING - Forbidden (Origin checking failed - http://localhost:5173 does not match any trusted origins.): /api/run-updater/
+2024-09-16 13:40:27,750 - WARNING - version.txt not found.
+2024-09-16 13:40:27,808 - INFO - Latest hash retrieved: 01e7d41a, published at: 2024-09-14T14:19:25Z
+2024-09-16 13:42:10,952 - WARNING - version.txt not found.
+2024-09-16 13:42:11,275 - INFO - Latest hash retrieved: 01e7d41a, published at: 2024-09-14T14:19:25Z
+2024-09-16 13:42:20,200 - WARNING - version.txt not found.
+2024-09-16 13:42:20,256 - INFO - Latest hash retrieved: 01e7d41a, published at: 2024-09-14T14:19:25Z

@@ -12,7 +12,7 @@ export default function Sidebar() {
             <GardenLogo />
           </div>
         </div>
-        <div className="flex-1">
+        <div className="flex-1 flex flex-col justify-between">
           <nav className="grid items-start text-sm font-medium px-4">
             <SidebarItem
               to="/"
@@ -31,12 +31,14 @@ export default function Sidebar() {
               label="Produtos"
               icon={<Package className="h-4 w-4" />}
             />
-            {/* <SidebarItem 
-              to="/test" 
-              label="Test"
-              icon={<Puzzle className="h-4 w-4" />}
-            /> */}
           </nav>
+          <div className="px-4 py-4">
+            <SidebarItem 
+              to="/updates" 
+              label="Atualizações"
+              icon={<Package className="h-4 w-4" />}
+            />
+          </div>
         </div>
       </div>
     </div>
