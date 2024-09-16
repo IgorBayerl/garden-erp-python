@@ -20,8 +20,10 @@ from app.views.pieces import CSVParseView, PieceView
 from app.views.products import ProductView, CSVUploadView
 from app.views.orders import calculate_order_by_size, calculate_order_by_product
 from app.views.client import IndexView
+from app.views.system import CheckUpdateView, RunUpdaterView
 from django.conf.urls.static import static
 from django.conf import settings
+
 
 urlpatterns = [
     # Admin
@@ -40,6 +42,10 @@ urlpatterns = [
     # Orders
     path('api/orders/calculate_order_by_size/', calculate_order_by_size, name='calculate_order_by_size'),
     path('api/orders/calculate_order_by_product/', calculate_order_by_product, name='calculate_order_by_product'),
+
+    # Update
+    path('api/check-update/', CheckUpdateView.as_view(), name='check-update'),
+    path('api/update/', RunUpdaterView.as_view(), name='update'),
     
     # Serve media files at /media/
 ] + static('/media/', document_root=settings.MEDIA_ROOT) + [
