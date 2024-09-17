@@ -32,7 +32,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: client-build
-          path: client/build
+          path: client/dist
 
   build_server:
     runs-on: windows-latest
@@ -62,7 +62,7 @@ jobs:
 
       - name: Copy client build to server static directory
         shell: cmd
-        run: xcopy /E /I /Y client\build server\static\client
+        run: xcopy /E /I /Y client\build server\static
 
       - name: Collect static files
         shell: cmd
