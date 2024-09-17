@@ -16,7 +16,7 @@ jobs:
       - name: Set up Node.js environment
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '22'
 
       - name: Install client dependencies
         shell: cmd
@@ -34,18 +34,11 @@ jobs:
           name: client-build
           path: client/dist
 
-  build_server:
+  build_gardenerp:
     runs-on: windows-latest
-    needs: build_client
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
-      - name: Download client build artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: client-build
-          path: client/build  # Downloads to the same path
 
       - name: Set up Python environment
         uses: actions/setup-python@v4
@@ -60,11 +53,7 @@ jobs:
           pip install pyinstaller
           pip install -r requirements.txt
 
-      - name: Copy client build to server static directory
-        shell: cmd
-        run: xcopy /E /I /Y client\build server\static
-
-      - name: Collect static files
+      - name: Collect GardenErp static files
         shell: cmd
         working-directory: server
         run: python manage.py collectstatic --noinput
@@ -74,10 +63,53 @@ jobs:
         working-directory: server
         run: pyinstaller GardenErp.spec
 
+      - name: Upload GardenErp executable and static files
+        uses: actions/upload-artifact@v3
+        with:
+          name: gardenerp-artifact
+          path: |
+            server/dist/GardenErp.exe
+            server/dist/static/**
+
+  build_updater:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python environment
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        shell: cmd
+        working-directory: server
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          pip install -r requirements.txt
+
       - name: Build updater executable with PyInstaller
         shell: cmd
         working-directory: server
         run: pyinstaller updater.spec
+
+      - name: Upload updater executable artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: updater-exe
+          path: server/dist/updater.exe
+
+  package:
+    runs-on: windows-latest
+    needs:
+      - build_client
+      - build_gardenerp
+      - build_updater
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
       - name: Set Build Name with Short Git SHA
         id: set_build_name
@@ -87,41 +119,48 @@ jobs:
           echo "BUILD_NAME=$shortSha" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo "build_name=$shortSha" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
-      - name: Create a zip file with the executables and static files
+      - name: Create distribution directory
         shell: pwsh
         run: |
-          cd server\dist
           mkdir "GardenErp-$env:BUILD_NAME"
-          Copy-Item GardenErp.exe "GardenErp-$env:BUILD_NAME\"
-          Copy-Item updater.exe "GardenErp-$env:BUILD_NAME\"
-          Copy-Item ..\staticfiles "GardenErp-$env:BUILD_NAME\static" -Recurse
+
+      - name: Download GardenErp executable and static files
+        uses: actions/download-artifact@v3
+        with:
+          name: gardenerp-artifact
+          path: "GardenErp-$env:BUILD_NAME"
+
+      - name: Download updater executable
+        uses: actions/download-artifact@v3
+        with:
+          name: updater-exe
+          path: "GardenErp-$env:BUILD_NAME"
+
+      - name: Download client build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: client-build
+          path: temp-client-build
+
+      - name: Copy client build files into static directory
+        shell: pwsh
+        run: |
+          # Ensure the static directory exists
+          if (-Not (Test-Path "GardenErp-$env:BUILD_NAME\static")) {
+            mkdir "GardenErp-$env:BUILD_NAME\static"
+          }
+          Copy-Item temp-client-build\* "GardenErp-$env:BUILD_NAME\static" -Recurse -Force
+
+      - name: Create ZIP package
+        shell: pwsh
+        run: |
           Compress-Archive -Path "GardenErp-$env:BUILD_NAME" -DestinationPath "GardenErp-$env:BUILD_NAME.zip"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v3
         with:
           name: build-artifact
-          path: server\dist\GardenErp-${{ env.BUILD_NAME }}.zip
-
-  create_release:
-    runs-on: windows-latest
-    needs: build_server
-    permissions:
-      contents: write  # Adjusted permissions for creating releases
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Set Build Name from previous job
-        shell: pwsh
-        run: |
-          echo "BUILD_NAME=${{ needs.build_server.outputs.build_name }}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-      - name: Download build artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: build-artifact
-          path: .
+          path: GardenErp-${{ steps.set_build_name.outputs.build_name }}.zip
 
       - name: Create Release
         id: create_release
@@ -129,8 +168,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ env.BUILD_NAME }}
-          release_name: Release ${{ env.BUILD_NAME }}
+          tag_name: ${{ steps.set_build_name.outputs.build_name }}
+          release_name: Release ${{ steps.set_build_name.outputs.build_name }}
           draft: false
           prerelease: false
 
@@ -140,6 +179,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: GardenErp-${{ env.BUILD_NAME }}.zip
-          asset_name: GardenErp-${{ env.BUILD_NAME }}.zip
+          asset_path: GardenErp-${{ steps.set_build_name.outputs.build_name }}.zip
+          asset_name: GardenErp-${{ steps.set_build_name.outputs.build_name }}.zip
           asset_content_type: application/zip
