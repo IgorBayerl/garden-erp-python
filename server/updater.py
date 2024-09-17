@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import requests
 import zipfile
 import shutil
@@ -87,7 +88,7 @@ def extract_zip(file_path, extract_to):
         logging.error(f"Error extracting zip file: {e}")
         raise
 
-def replace_files(source_dir, target_dir, exclude=[]):
+def replace_files(source_dir, target_dir, exclude=[], retries=3, delay=2):
     source_dir = os.path.abspath(source_dir)
     target_dir = os.path.abspath(target_dir)
     for item in os.listdir(source_dir):
@@ -97,14 +98,22 @@ def replace_files(source_dir, target_dir, exclude=[]):
         s = os.path.join(source_dir, item)
         d = os.path.join(target_dir, item)
         if os.path.exists(d):
-            try:
-                if os.path.isdir(d):
-                    shutil.rmtree(d)
-                else:
-                    os.remove(d)
-                logging.info(f"Removed existing {d}")
-            except Exception as e:
-                logging.error(f"Error removing {d}: {e}")
+            attempt = 0
+            while attempt < retries:
+                try:
+                    if os.path.isdir(d):
+                        shutil.rmtree(d)
+                    else:
+                        os.remove(d)
+                    logging.info(f"Removed existing {d}")
+                    break
+                except Exception as e:
+                    logging.error(f"Error removing {d}: {e}")
+                    attempt += 1
+                    logging.info(f"Retrying in {delay} seconds... (Attempt {attempt}/{retries})")
+                    time.sleep(delay)
+            else:
+                logging.error(f"Failed to remove {d} after {retries} attempts.")
                 continue
         try:
             shutil.move(s, d)
@@ -124,14 +133,26 @@ def stop_application(process_name):
         for proc in psutil.process_iter(['name', 'exe', 'cmdline']):
             if process_name.lower() in proc.info['name'].lower():
                 proc.terminate()
-                proc.wait(timeout=5)
-                logging.info(f"{process_name} terminated.")
-                return
+                try:
+                    proc.wait(timeout=10)  # Increased timeout
+                    logging.info(f"{process_name} terminated.")
+                except psutil.TimeoutExpired:
+                    proc.kill()
+                    logging.info(f"{process_name} killed after timeout.")
+                
+                # Double-check if the process has terminated
+                if proc.is_running():
+                    logging.error(f"Failed to terminate {process_name}.")
+                    return False
+                return True
         logging.info(f"{process_name} not running.")
+        return True
     except psutil.NoSuchProcess:
         logging.info(f"{process_name} already terminated.")
+        return True
     except Exception as e:
         logging.error(f"Error stopping {process_name}: {e}")
+        return False
 
 def backup_files(files_to_backup, backup_dir='backup'):
     os.makedirs(backup_dir, exist_ok=True)
@@ -140,6 +161,8 @@ def backup_files(files_to_backup, backup_dir='backup'):
             try:
                 dest = os.path.join(backup_dir, os.path.basename(item))
                 if os.path.isdir(item):
+                    if os.path.exists(dest):
+                        shutil.rmtree(dest)
                     shutil.copytree(item, dest)
                 else:
                     shutil.copy2(item, dest)
@@ -170,7 +193,7 @@ def update_application():
     repo_owner = 'IgorBayerl'
     repo_name = 'garden-erp-python'
     executable_name = 'GardenErp.exe'
-    temp_extract_dir = 'update_temp'  # Define before try-finally
+    temp_extract_dir = 'update_temp'
     current_hash = get_current_hash()
     latest_hash, _ = get_latest_release_info(repo_owner, repo_name)
 
@@ -188,18 +211,30 @@ def update_application():
                 if download_file(download_url, 'update.zip'):
                     logging.info("Download complete.")
                     logging.info("Stopping application...")
-                    stop_application(executable_name)
-                    logging.info("Backing up current files...")
-                    backup_files([executable_name, 'static'], backup_dir='backup')
-                    logging.info("Applying update...")
-                    extract_zip('update.zip', temp_extract_dir)
-                    extracted_folder = os.path.join(temp_extract_dir, f'GardenErp-{latest_hash}')
-                    replace_files(extracted_folder, '.', exclude=EXCLUDE_LIST)
-                    with open('version.txt', 'w') as f:
-                        f.write(latest_hash)
-                    logging.info("Update applied.")
-                    logging.info("Starting application...")
-                    start_application(executable_name)
+                    if stop_application(executable_name):
+                        logging.info("Waiting for file handles to be released...")
+                        time.sleep(2)  # Allow OS to release file handles
+                        logging.info("Backing up current files...")
+                        backup_files([executable_name, 'static'], backup_dir='backup')
+                        logging.info("Applying update...")
+                        extract_zip('update.zip', temp_extract_dir)
+                        
+                        # Dynamically identify the extracted folder
+                        extracted_folders = [d for d in os.listdir(temp_extract_dir) if os.path.isdir(os.path.join(temp_extract_dir, d))]
+                        if len(extracted_folders) == 1:
+                            extracted_folder = os.path.join(temp_extract_dir, extracted_folders[0])
+                        else:
+                            extracted_folder = temp_extract_dir
+                        
+                        replace_files(extracted_folder, '.', exclude=EXCLUDE_LIST)
+                        
+                        # Update version.txt
+                        with open('version.txt', 'w') as f:
+                            f.write(latest_hash)
+                        
+                        logging.info("Update applied.")
+                        logging.info("Starting application...")
+                        start_application(executable_name)
                 else:
                     logging.error("Failed to download the update.")
             else:
@@ -214,6 +249,7 @@ def update_application():
                 shutil.rmtree(temp_extract_dir)
     else:
         logging.info("No updates available.")
+
 
 def is_admin():
     try:
