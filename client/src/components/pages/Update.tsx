@@ -53,8 +53,12 @@ const UpdatePage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div>Carregando...</div>
+      <div className="flex  flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 min-h-screen max-h-screen justify-center">
+        <div className='flex flex-shrink w-fit mx-auto items-center justify-center '>
+          <Alert>
+            Carregando...
+          </Alert>
+        </div>
       </div>
     );
   }
@@ -65,10 +69,12 @@ const UpdatePage: React.FC = () => {
     });
 
     return (
-      <div className="flex items-center justify-center h-full">
-        <Alert>
-          Ocorreu um erro ao verificar atualizações. Por favor, tente novamente mais tarde.
-        </Alert>
+      <div className="flex  flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 min-h-screen max-h-screen justify-center">
+        <div className='flex flex-shrink w-fit mx-auto items-center justify-center '>
+          <Alert>
+            Ocorreu um erro ao verificar atualizações. Por favor, tente novamente mais tarde.
+          </Alert>
+        </div>
       </div>
     );
   }
