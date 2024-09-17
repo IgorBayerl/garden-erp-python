@@ -28,8 +28,8 @@ def on_quit(icon, item):
 def setup_tray():
     """Set up the system tray icon."""
     menu = pystray.Menu(
-        item('Open in Browser', handle_open_browser),
-        item('Quit', on_quit)
+        item('Abrir no navegador', handle_open_browser),
+        item('Sair', on_quit)
     )
 
     icon = pystray.Icon("django_server", create_image(), "Garden ERP Server", menu=menu)
