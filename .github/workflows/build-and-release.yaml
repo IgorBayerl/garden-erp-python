@@ -7,96 +7,139 @@ on:
   workflow_dispatch:  # Allows you to trigger the workflow manually
 
 jobs:
-  build:
-    permissions: write-all  # Required to create a release
+  build_client:
     runs-on: windows-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up Node.js environment
-      uses: actions/setup-node@v3
-      with:
-        node-version: '22'
+      - name: Set up Node.js environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
 
-    - name: Install client dependencies and build
-      shell: cmd
-      run: |
-        cd client
-        yarn install
-        yarn build
+      - name: Install client dependencies
+        shell: cmd
+        working-directory: client
+        run: yarn install
 
-    - name: Set up Python environment
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.12'  # Use the same version of Python as your project
+      - name: Build client
+        shell: cmd
+        working-directory: client
+        run: yarn build
 
-    - name: Install dependencies
-      shell: cmd
-      working-directory: server
-      run: |
-        python -m pip install --upgrade pip
-        pip install pyinstaller
-        pip install -r requirements.txt
+      - name: Upload client build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: client-build
+          path: client/build
 
-    - name: Collect static files
-      shell: cmd
-      working-directory: server
-      run: |
-        python manage.py collectstatic --noinput
+  build_server:
+    runs-on: windows-latest
+    needs: build_client
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Build GardenErp executable with PyInstaller
-      shell: cmd
-      working-directory: server
-      run: |
-        pyinstaller GardenErp.spec
+      - name: Download client build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: client-build
+          path: client/build  # Downloads to the same path
 
-    - name: Build updater executable with PyInstaller
-      shell: cmd
-      working-directory: server
-      run: |
-        pyinstaller updater.spec
+      - name: Set up Python environment
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
 
-    - name: Set Build Name with Short Git SHA
-      shell: pwsh
-      run: |
-        $shortSha = $env:GITHUB_SHA.Substring(0, 8)
-        echo "BUILD_NAME=$shortSha" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Install dependencies
+        shell: cmd
+        working-directory: server
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          pip install -r requirements.txt
 
-    - name: Create a zip file with the executables and static files
-      shell: pwsh
-      run: |
-        cd server\dist
-        mkdir "GardenErp-$env:BUILD_NAME"
-        Move-Item GardenErp.exe "GardenErp-$env:BUILD_NAME\"
-        Move-Item updater.exe "GardenErp-$env:BUILD_NAME\"
-        Move-Item static "GardenErp-$env:BUILD_NAME\static"
-        Compress-Archive -Path "GardenErp-$env:BUILD_NAME" -DestinationPath "GardenErp-$env:BUILD_NAME.zip"
+      - name: Copy client build to server static directory
+        shell: cmd
+        run: xcopy /E /I /Y client\build server\static\client
 
-    - name: Archive build artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: GardenErp-${{ env.BUILD_NAME }}
-        path: server\dist\GardenErp-${{ env.BUILD_NAME }}.zip
+      - name: Collect static files
+        shell: cmd
+        working-directory: server
+        run: python manage.py collectstatic --noinput
 
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ env.BUILD_NAME }}  # Unique tag name with short Git SHA
-        release_name: Release ${{ env.BUILD_NAME }}
-        draft: false
-        prerelease: false
+      - name: Build GardenErp executable with PyInstaller
+        shell: cmd
+        working-directory: server
+        run: pyinstaller GardenErp.spec
 
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: server\dist\GardenErp-${{ env.BUILD_NAME }}.zip
-        asset_name: GardenErp-${{ env.BUILD_NAME }}.zip
-        asset_content_type: application/zip
+      - name: Build updater executable with PyInstaller
+        shell: cmd
+        working-directory: server
+        run: pyinstaller updater.spec
+
+      - name: Set Build Name with Short Git SHA
+        id: set_build_name
+        shell: pwsh
+        run: |
+          $shortSha = $env:GITHUB_SHA.Substring(0, 8)
+          echo "BUILD_NAME=$shortSha" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "build_name=$shortSha" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Create a zip file with the executables and static files
+        shell: pwsh
+        run: |
+          cd server\dist
+          mkdir "GardenErp-$env:BUILD_NAME"
+          Copy-Item GardenErp.exe "GardenErp-$env:BUILD_NAME\"
+          Copy-Item updater.exe "GardenErp-$env:BUILD_NAME\"
+          Copy-Item ..\staticfiles "GardenErp-$env:BUILD_NAME\static" -Recurse
+          Compress-Archive -Path "GardenErp-$env:BUILD_NAME" -DestinationPath "GardenErp-$env:BUILD_NAME.zip"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifact
+          path: server\dist\GardenErp-${{ env.BUILD_NAME }}.zip
+
+  create_release:
+    runs-on: windows-latest
+    needs: build_server
+    permissions:
+      contents: write  # Adjusted permissions for creating releases
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set Build Name from previous job
+        shell: pwsh
+        run: |
+          echo "BUILD_NAME=${{ needs.build_server.outputs.build_name }}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifact
+          path: .
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.BUILD_NAME }}
+          release_name: Release ${{ env.BUILD_NAME }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: GardenErp-${{ env.BUILD_NAME }}.zip
+          asset_name: GardenErp-${{ env.BUILD_NAME }}.zip
+          asset_content_type: application/zip
