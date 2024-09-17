@@ -43,6 +43,7 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
+    uac_admin=True,
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,

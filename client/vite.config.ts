@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => ({
   },
   base: mode === 'production' ? '/static/' : '/',  // Used to serve files correctly in production
   build: {
-    outDir: "../server/static",
+    outDir: "dist",
     assetsDir: "",
   },
 }))

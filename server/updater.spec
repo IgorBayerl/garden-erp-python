@@ -29,6 +29,7 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
+    uac_admin=True,
     console=True,
     disable_windowed_traceback=False,
     argv_emulation=False,

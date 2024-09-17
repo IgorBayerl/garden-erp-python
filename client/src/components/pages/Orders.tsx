@@ -97,7 +97,7 @@ export default function OrdersPage() {
       <div className="flex flex-col flex-grow gap-4 rounded-lg border border-dashed shadow-sm overflow-hidden">
         <ResizablePanelGroup direction="horizontal" className="flex-grow">
           <ResizablePanel minSize={32} defaultSize={32} className="flex flex-col overflow-hidden">
-            <div className="flex flex-col gap-4 mx-4 overflow-hidden">
+            <div className="flex flex-col gap-4 mx-4 overflow-hidden pt-2">
               {isLoading && <SkeletonLoader />}
               {isError && <ErrorState />}
               {!isLoading && !isError && products && (

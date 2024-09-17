@@ -33,6 +33,7 @@ export default function Sidebar() {
             />
           </nav>
           <div className="px-4 py-4">
+            <Separator className="my-2" />
             <SidebarItem 
               to="/updates" 
               label="Atualizações"
