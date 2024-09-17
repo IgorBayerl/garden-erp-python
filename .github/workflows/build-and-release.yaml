@@ -122,19 +122,19 @@ jobs:
       - name: Create distribution directory
         shell: pwsh
         run: |
-          mkdir "GardenErp-$env:BUILD_NAME"
+          mkdir "GardenErp-${{ steps.set_build_name.outputs.build_name }}"
 
       - name: Download GardenErp executable and static files
         uses: actions/download-artifact@v3
         with:
           name: gardenerp-artifact
-          path: "GardenErp-$env:BUILD_NAME"
+          path: "GardenErp-${{ steps.set_build_name.outputs.build_name }}"
 
       - name: Download updater executable
         uses: actions/download-artifact@v3
         with:
           name: updater-exe
-          path: "GardenErp-$env:BUILD_NAME"
+          path: "GardenErp-${{ steps.set_build_name.outputs.build_name }}"
 
       - name: Download client build artifact
         uses: actions/download-artifact@v3
@@ -146,15 +146,15 @@ jobs:
         shell: pwsh
         run: |
           # Ensure the static directory exists
-          if (-Not (Test-Path "GardenErp-$env:BUILD_NAME\static")) {
-            mkdir "GardenErp-$env:BUILD_NAME\static"
+          if (-Not (Test-Path "GardenErp-${{ steps.set_build_name.outputs.build_name }}\static")) {
+            mkdir "GardenErp-${{ steps.set_build_name.outputs.build_name }}\static"
           }
-          Copy-Item temp-client-build\* "GardenErp-$env:BUILD_NAME\static" -Recurse -Force
+          Copy-Item temp-client-build\* "GardenErp-${{ steps.set_build_name.outputs.build_name }}\static" -Recurse -Force
 
       - name: Create ZIP package
         shell: pwsh
         run: |
-          Compress-Archive -Path "GardenErp-$env:BUILD_NAME" -DestinationPath "GardenErp-$env:BUILD_NAME.zip"
+          Compress-Archive -Path "GardenErp-${{ steps.set_build_name.outputs.build_name }}" -DestinationPath "GardenErp-${{ steps.set_build_name.outputs.build_name }}.zip"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v3
