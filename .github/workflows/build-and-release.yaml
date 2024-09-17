@@ -102,6 +102,7 @@ jobs:
           path: server/dist/updater.exe
 
   package:
+    permissions: write-all
     runs-on: windows-latest
     needs:
       - build_client
