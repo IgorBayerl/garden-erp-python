@@ -22,6 +22,18 @@ export const useCheckForUpdates = () => {
   });
 };
 
+export const usePollForUpdate = (enabled: boolean) => {
+  return useQuery<UpdateInfo, AxiosError>({
+    queryKey: ['pollForUpdate'],
+    queryFn: async () => {
+      const response = await api.get<UpdateInfo>('/check-update/');
+      return response.data;
+    },
+    enabled,
+    refetchInterval: enabled ? 2000 : false, // Poll every 2 seconds when enabled
+  });
+};
+
 interface ErrorResponse {
   message?: string
 }

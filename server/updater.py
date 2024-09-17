@@ -123,7 +123,9 @@ def replace_files(source_dir, target_dir, exclude=[], retries=3, delay=2):
 
 def start_application(executable_path):
     try:
-        subprocess.Popen([executable_path])
+        command = [executable_path]
+        command.append('--no-browser')
+        subprocess.Popen(command)
         logging.info(f"{executable_path} started.")
     except Exception as e:
         logging.error(f"Error starting application: {e}")

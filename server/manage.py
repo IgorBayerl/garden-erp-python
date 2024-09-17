@@ -28,13 +28,22 @@ def main():
             "available on your PYTHONPATH environment variable? Did you "
             "forget to activate a virtual environment?"
         ) from exc
-    
+
+    # Initialize the no_browser flag
+    no_browser = False
+
+    # Check if '--no-browser' flag is present
+    if '--no-browser' in sys.argv:
+        no_browser = True
+        sys.argv.remove('--no-browser')  # Remove the flag to prevent Django errors
+
     if check_if_running():
         print("The server is already running.")
-        # Open the browser if the server is already running
-        handle_open_browser()
+        # Open the browser if the server is already running and not suppressed
+        if not no_browser:
+            handle_open_browser()
         sys.exit(1)
-    
+
     # Log the path to the database
     db_path = settings.DATABASES['default']['NAME']
     print(f"Using database located at: {db_path}")
@@ -48,12 +57,16 @@ def main():
 
     # Check if the command is 'runserver' and only then open the browser and system tray
     if 'runserver' in sys.argv:
-        # Start a new thread to open the browser
-        open_browser_if_needed()
+        # Open the browser if '--no-browser' is not set
+        if not no_browser:
+            # Start a new thread to open the browser
+            open_browser_if_needed()
+            handle_open_browser()
+
         show_ascii_art()
 
         # Start the system tray icon in a separate thread to keep the server running
-        if(is_pyinstaller()):
+        if is_pyinstaller():
             threading.Thread(target=setup_tray, daemon=True).start()
 
     execute_from_command_line(sys.argv)
