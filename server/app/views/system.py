@@ -2,21 +2,11 @@
 
 import ctypes
 import os
+import threading
 import requests
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-import logging
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO, 
-    format='%(asctime)s - %(levelname)s - %(message)s', 
-    handlers=[
-        logging.FileHandler('updater.log'),
-        logging.StreamHandler()
-    ]
-)
 
 # GitHub repository details
 REPO_OWNER = 'IgorBayerl'
@@ -26,10 +16,10 @@ def get_current_hash():
     try:
         with open('version.txt', 'r') as f:
             current_hash = f.read().strip()
-            logging.info(f"Current hash: {current_hash}")
+            print(f"Current hash: {current_hash}")
             return current_hash
     except FileNotFoundError:
-        logging.warning("version.txt not found.")
+        print("version.txt not found.")
         return None
 
 def get_latest_release_info():
@@ -40,10 +30,10 @@ def get_latest_release_info():
         release = response.json()
         latest_hash = release['tag_name']
         published_at = release['published_at']
-        logging.info(f"Latest hash retrieved: {latest_hash}, published at: {published_at}")
+        print(f"Latest hash retrieved: {latest_hash}, published at: {published_at}")
         return latest_hash, published_at
     except requests.RequestException as e:
-        logging.error(f"Error fetching release information: {e}")
+        print(f"Error fetching release information: {e}")
         return None, None
 
 class CheckUpdateView(APIView):
@@ -86,10 +76,21 @@ class RunUpdaterView(APIView):
                 None, "runas", updater_path, None, None, 1
             )
 
-            logging.info("Updater started.")
+            print("Updater started.")
+
+             # Start shutdown in a new thread so the response can be sent first
+            def shutdown_app():
+                # Wait a moment to ensure response has been sent
+                import time
+                time.sleep(3)
+                # Shut down the application
+                os._exit(0)  # or sys.exit() for graceful shutdown
+
+            # Run the shutdown process in a separate thread
+            threading.Thread(target=shutdown_app).start()
             return Response({"message": "Updater started."})
         except Exception as e:
-            logging.error(f"Failed to start updater: {e}")
+            print(f"Failed to start updater: {e}")
             return Response(
                 {"message": f"Failed to start updater: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
